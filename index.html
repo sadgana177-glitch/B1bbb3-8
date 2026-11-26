@@ -1,0 +1,1263 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مساحة السطح</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
+<style>
+/* Layout concept: graph-paper notebook. A quiet grid ground, ink-green text, and the three face colours of the textbook net (green, yellow, salmon) used as the only decoration. */
+:root{
+  --bg:#f2f6f3; --surface:#ffffff; --surface2:#eaf2ed; --fg:#14302d; --muted:#4f645e; --line:#cfdcd5;
+  --brand:#0b7a5b; --brand-ink:#075c44; --on-brand:#ffffff; --accent:#d9481f; --on-accent:#ffffff;
+  --fa:#bfe3d2; --fb:#fbe38a; --fc:#f7b9a1; --stroke:#14302d;
+  --ok:#12805c; --ok-bg:#dcf2e8; --bad:#b8321b; --bad-bg:#fbe3dc; --grid:rgba(11,122,91,.08);
+  --f-head:"Readex Pro","IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1b19; --surface:#152826; --surface2:#1b3330; --fg:#e6f0ec; --muted:#a2b8b0; --line:#2b4540;
+    --brand:#3fd1a1; --brand-ink:#7de3c1; --on-brand:#06231a; --accent:#ff8660; --on-accent:#2a0d03;
+    --fa:#1f5a47; --fb:#6b5a1a; --fc:#7a3a27; --stroke:#cfe6dc;
+    --ok:#47d19a; --ok-bg:#12382b; --bad:#ff8a73; --bad-bg:#43211a; --grid:rgba(63,209,161,.07);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1b19; --surface:#152826; --surface2:#1b3330; --fg:#e6f0ec; --muted:#a2b8b0; --line:#2b4540;
+  --brand:#3fd1a1; --brand-ink:#7de3c1; --on-brand:#06231a; --accent:#ff8660; --on-accent:#2a0d03;
+  --fa:#1f5a47; --fb:#6b5a1a; --fc:#7a3a27; --stroke:#cfe6dc;
+  --ok:#47d19a; --ok-bg:#12382b; --bad:#ff8a73; --bad-bg:#43211a; --grid:rgba(63,209,161,.07);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{direction:rtl}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--fg); font-family:var(--f-body); font-size:16px; line-height:1.75;
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1040px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-head);line-height:1.4;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.55rem,4.4vw,2.35rem);font-weight:700}
+h2{font-size:clamp(1.25rem,3.2vw,1.6rem);font-weight:600}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:var(--brand-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:24px}
+.hero>div{min-width:0}
+.hero svg{width:190px;max-width:100%;height:auto}
+.grade{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--on-accent);font-family:var(--f-head);font-weight:700;font-size:1.15rem;padding:4px 16px;border-radius:999px;margin-bottom:10px}
+.en{color:var(--muted);font-size:.95rem;direction:ltr;text-align:right;margin-top:6px}
+@media (max-width:640px){.hero{grid-template-columns:1fr}.hero svg{display:none}}
+
+/* Buttons */
+.btn{appearance:none;border:1.5px solid var(--brand);background:var(--brand);color:var(--on-brand);font:600 1rem var(--f-body);padding:10px 20px;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn:hover{filter:brightness(1.07)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;color:var(--brand-ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.small{min-height:36px;padding:4px 14px;font-size:.92rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* Cards */
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:22px;min-width:0}
+.card.soft{background:var(--surface2)}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* Gate */
+.gate{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.gate{grid-template-columns:1fr}}
+.contacts{display:flex;flex-direction:column;gap:10px}
+.contact{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;text-decoration:none;color:var(--fg);font-weight:500;min-height:56px}
+.contact:hover{border-color:var(--brand)}
+.contact svg{width:36px;height:36px;flex:none}
+.contact small{display:block;color:var(--muted);font-weight:400;font-size:.8rem;line-height:1.3}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-weight:600}
+input[type=text],input[type=password],input[type=search]{font:500 1.05rem var(--f-body);color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;width:100%;min-height:46px}
+input.ans{max-width:240px}
+.msg{min-height:1.6em;font-weight:500}
+.msg.err{color:var(--bad)} .msg.ok{color:var(--ok)}
+details.teacher{border-top:1.5px dashed var(--line);padding-top:14px;margin-top:6px}
+details.teacher summary{cursor:pointer;font-weight:600;color:var(--brand-ink)}
+.pwrow{display:flex;gap:8px}
+.pwrow input{flex:1;min-width:0}
+
+/* Home choices */
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.choice{display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:start;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:16px;padding:22px;cursor:pointer;font:inherit}
+.choice:hover{border-color:var(--brand)}
+.choice .tag{font-family:var(--f-head);font-weight:600;background:var(--surface2);border-radius:8px;padding:0 10px;font-size:.85rem;color:var(--muted)}
+.choice h2{font-size:1.5rem}
+.choice p{color:var(--muted)}
+
+/* Inner screens */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.crumb{font-family:var(--f-head);font-weight:600;color:var(--muted)}
+.eng{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 18px}
+.eng strong{font-family:var(--f-head);display:block}
+.eng .ph{color:var(--muted);unicode-bidi:isolate;direction:ltr;display:inline-block}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:500 .95rem var(--f-body);border-radius:999px;padding:6px 16px;cursor:pointer;min-height:40px}
+.chip[aria-current=true]{background:var(--brand);border-color:var(--brand);color:var(--on-brand);font-weight:600}
+.formula{background:var(--surface2);border-inline-start:5px solid var(--accent);border-radius:10px;padding:12px 16px;font-weight:600}
+.eq{font-family:var(--f-head);font-weight:500;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;margin-block:8px;overflow-x:auto;unicode-bidi:isolate}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start}
+.viz{background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px}
+.viz svg{display:block;width:100%;height:auto;max-height:300px}
+.viz figcaption{text-align:center;color:var(--muted);font-size:.9rem}
+figure{margin:0}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.slider{display:flex;flex-direction:column;gap:2px}
+.slider b{font-family:var(--f-head)}
+input[type=range]{width:100%;accent-color:var(--brand);min-height:30px}
+.tbl{width:100%;border-collapse:collapse;font-size:.97rem}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:start}
+.tbl th{color:var(--muted);font-weight:600}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:4px;border:1.5px solid var(--stroke);vertical-align:-2px;margin-inline-end:6px}
+.fa{fill:var(--fa);background:var(--fa)} .fb{fill:var(--fb);background:var(--fb)} .fc{fill:var(--fc);background:var(--fc)}
+svg .face{stroke:var(--stroke);stroke-width:1.6;stroke-linejoin:round}
+svg text{fill:var(--fg);font-family:var(--f-body);font-size:13px}
+svg .dim{font-weight:600;font-size:13px}
+svg .area{font-size:12px;text-anchor:middle;dominant-baseline:middle;font-weight:600}
+svg .dash{stroke:var(--accent);stroke-width:2;stroke-dasharray:5 4;fill:none}
+.steps{display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.step{background:var(--surface2);border-radius:12px;padding:10px 14px 10px 14px;position:relative;padding-inline-start:52px}
+.step::before{counter-increment:s;content:counter(s,arabic-indic);position:absolute;inset-inline-start:12px;top:10px;width:28px;height:28px;border-radius:50%;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;font-family:var(--f-head);font-weight:600;font-size:.95rem;line-height:1}
+.final{background:var(--ok-bg);border:1.5px solid var(--ok);border-radius:12px;padding:10px 16px;font-weight:600}
+.badge{display:inline-block;border-radius:8px;padding:0 10px;font-weight:600}
+.badge.ok{background:var(--ok-bg);color:var(--ok)} .badge.bad{background:var(--bad-bg);color:var(--bad)}
+.note{color:var(--muted);font-size:.93rem}
+
+/* Quiz */
+.prog{height:10px;background:var(--surface2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.prog i{display:block;height:100%;background:var(--brand);width:0;transition:width .25s}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{appearance:none;text-align:start;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:12px;padding:12px 16px;font:500 1.02rem var(--f-body);cursor:pointer;min-height:52px;display:flex;gap:10px;align-items:center}
+.opt:hover{border-color:var(--brand)}
+.opt[aria-pressed=true]{border-color:var(--brand);background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--brand)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--f-head);font-size:.85rem}
+.opt[aria-pressed=true] .k{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.confirm{border:2px solid var(--accent);background:var(--surface)}
+.score{font-family:var(--f-head);font-size:clamp(2rem,8vw,3.2rem);font-weight:700;color:var(--brand-ink)}
+.rev{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);display:flex;flex-direction:column;gap:8px;min-width:0}
+.rev.ok{border-color:var(--ok)} .rev.bad{border-color:var(--bad)}
+textarea.copybox{width:100%;min-height:110px;font:500 .95rem var(--f-body);color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app"></div>
+<script id="state" type="application/json">{"ph":"7eea4a52d647aae0bf697238d2ebf2dd589d800f2bfac1c7130e11b443029fed"}</script>
+<script id="tpl" type="text/plain"><title>مساحة السطح</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
+<style>
+/* Layout concept: graph-paper notebook. A quiet grid ground, ink-green text, and the three face colours of the textbook net (green, yellow, salmon) used as the only decoration. */
+:root{
+  --bg:#f2f6f3; --surface:#ffffff; --surface2:#eaf2ed; --fg:#14302d; --muted:#4f645e; --line:#cfdcd5;
+  --brand:#0b7a5b; --brand-ink:#075c44; --on-brand:#ffffff; --accent:#d9481f; --on-accent:#ffffff;
+  --fa:#bfe3d2; --fb:#fbe38a; --fc:#f7b9a1; --stroke:#14302d;
+  --ok:#12805c; --ok-bg:#dcf2e8; --bad:#b8321b; --bad-bg:#fbe3dc; --grid:rgba(11,122,91,.08);
+  --f-head:"Readex Pro","IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1b19; --surface:#152826; --surface2:#1b3330; --fg:#e6f0ec; --muted:#a2b8b0; --line:#2b4540;
+    --brand:#3fd1a1; --brand-ink:#7de3c1; --on-brand:#06231a; --accent:#ff8660; --on-accent:#2a0d03;
+    --fa:#1f5a47; --fb:#6b5a1a; --fc:#7a3a27; --stroke:#cfe6dc;
+    --ok:#47d19a; --ok-bg:#12382b; --bad:#ff8a73; --bad-bg:#43211a; --grid:rgba(63,209,161,.07);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1b19; --surface:#152826; --surface2:#1b3330; --fg:#e6f0ec; --muted:#a2b8b0; --line:#2b4540;
+  --brand:#3fd1a1; --brand-ink:#7de3c1; --on-brand:#06231a; --accent:#ff8660; --on-accent:#2a0d03;
+  --fa:#1f5a47; --fb:#6b5a1a; --fc:#7a3a27; --stroke:#cfe6dc;
+  --ok:#47d19a; --ok-bg:#12382b; --bad:#ff8a73; --bad-bg:#43211a; --grid:rgba(63,209,161,.07);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{direction:rtl}
+body{
+  background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;
+  color:var(--fg); font-family:var(--f-body); font-size:16px; line-height:1.75;
+  padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1040px;margin-inline:auto;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-head);line-height:1.4;margin:0;text-wrap:balance}
+h1{font-size:clamp(1.55rem,4.4vw,2.35rem);font-weight:700}
+h2{font-size:clamp(1.25rem,3.2vw,1.6rem);font-weight:600}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:var(--brand-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:24px}
+.hero>div{min-width:0}
+.hero svg{width:190px;max-width:100%;height:auto}
+.grade{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--on-accent);font-family:var(--f-head);font-weight:700;font-size:1.15rem;padding:4px 16px;border-radius:999px;margin-bottom:10px}
+.en{color:var(--muted);font-size:.95rem;direction:ltr;text-align:right;margin-top:6px}
+@media (max-width:640px){.hero{grid-template-columns:1fr}.hero svg{display:none}}
+
+/* Buttons */
+.btn{appearance:none;border:1.5px solid var(--brand);background:var(--brand);color:var(--on-brand);font:600 1rem var(--f-body);padding:10px 20px;border-radius:10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn:hover{filter:brightness(1.07)}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.ghost{background:transparent;color:var(--brand-ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.small{min-height:36px;padding:4px 14px;font-size:.92rem}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* Cards */
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:22px;min-width:0}
+.card.soft{background:var(--surface2)}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* Gate */
+.gate{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.gate{grid-template-columns:1fr}}
+.contacts{display:flex;flex-direction:column;gap:10px}
+.contact{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;text-decoration:none;color:var(--fg);font-weight:500;min-height:56px}
+.contact:hover{border-color:var(--brand)}
+.contact svg{width:36px;height:36px;flex:none}
+.contact small{display:block;color:var(--muted);font-weight:400;font-size:.8rem;line-height:1.3}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-weight:600}
+input[type=text],input[type=password],input[type=search]{font:500 1.05rem var(--f-body);color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;width:100%;min-height:46px}
+input.ans{max-width:240px}
+.msg{min-height:1.6em;font-weight:500}
+.msg.err{color:var(--bad)} .msg.ok{color:var(--ok)}
+details.teacher{border-top:1.5px dashed var(--line);padding-top:14px;margin-top:6px}
+details.teacher summary{cursor:pointer;font-weight:600;color:var(--brand-ink)}
+.pwrow{display:flex;gap:8px}
+.pwrow input{flex:1;min-width:0}
+
+/* Home choices */
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.choice{display:flex;flex-direction:column;gap:10px;align-items:flex-start;text-align:start;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:16px;padding:22px;cursor:pointer;font:inherit}
+.choice:hover{border-color:var(--brand)}
+.choice .tag{font-family:var(--f-head);font-weight:600;background:var(--surface2);border-radius:8px;padding:0 10px;font-size:.85rem;color:var(--muted)}
+.choice h2{font-size:1.5rem}
+.choice p{color:var(--muted)}
+
+/* Inner screens */
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.crumb{font-family:var(--f-head);font-weight:600;color:var(--muted)}
+.eng{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 18px}
+.eng strong{font-family:var(--f-head);display:block}
+.eng .ph{color:var(--muted);unicode-bidi:isolate;direction:ltr;display:inline-block}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{flex:none;appearance:none;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);font:500 .95rem var(--f-body);border-radius:999px;padding:6px 16px;cursor:pointer;min-height:40px}
+.chip[aria-current=true]{background:var(--brand);border-color:var(--brand);color:var(--on-brand);font-weight:600}
+.formula{background:var(--surface2);border-inline-start:5px solid var(--accent);border-radius:10px;padding:12px 16px;font-weight:600}
+.eq{font-family:var(--f-head);font-weight:500;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:8px 14px;margin-block:8px;overflow-x:auto;unicode-bidi:isolate}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start}
+.viz{background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:10px}
+.viz svg{display:block;width:100%;height:auto;max-height:300px}
+.viz figcaption{text-align:center;color:var(--muted);font-size:.9rem}
+figure{margin:0}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.slider{display:flex;flex-direction:column;gap:2px}
+.slider b{font-family:var(--f-head)}
+input[type=range]{width:100%;accent-color:var(--brand);min-height:30px}
+.tbl{width:100%;border-collapse:collapse;font-size:.97rem}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:start}
+.tbl th{color:var(--muted);font-weight:600}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:4px;border:1.5px solid var(--stroke);vertical-align:-2px;margin-inline-end:6px}
+.fa{fill:var(--fa);background:var(--fa)} .fb{fill:var(--fb);background:var(--fb)} .fc{fill:var(--fc);background:var(--fc)}
+svg .face{stroke:var(--stroke);stroke-width:1.6;stroke-linejoin:round}
+svg text{fill:var(--fg);font-family:var(--f-body);font-size:13px}
+svg .dim{font-weight:600;font-size:13px}
+svg .area{font-size:12px;text-anchor:middle;dominant-baseline:middle;font-weight:600}
+svg .dash{stroke:var(--accent);stroke-width:2;stroke-dasharray:5 4;fill:none}
+.steps{display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.step{background:var(--surface2);border-radius:12px;padding:10px 14px 10px 14px;position:relative;padding-inline-start:52px}
+.step::before{counter-increment:s;content:counter(s,arabic-indic);position:absolute;inset-inline-start:12px;top:10px;width:28px;height:28px;border-radius:50%;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;font-family:var(--f-head);font-weight:600;font-size:.95rem;line-height:1}
+.final{background:var(--ok-bg);border:1.5px solid var(--ok);border-radius:12px;padding:10px 16px;font-weight:600}
+.badge{display:inline-block;border-radius:8px;padding:0 10px;font-weight:600}
+.badge.ok{background:var(--ok-bg);color:var(--ok)} .badge.bad{background:var(--bad-bg);color:var(--bad)}
+.note{color:var(--muted);font-size:.93rem}
+
+/* Quiz */
+.prog{height:10px;background:var(--surface2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.prog i{display:block;height:100%;background:var(--brand);width:0;transition:width .25s}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{appearance:none;text-align:start;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:12px;padding:12px 16px;font:500 1.02rem var(--f-body);cursor:pointer;min-height:52px;display:flex;gap:10px;align-items:center}
+.opt:hover{border-color:var(--brand)}
+.opt[aria-pressed=true]{border-color:var(--brand);background:var(--surface2);box-shadow:inset 0 0 0 1.5px var(--brand)}
+.opt .k{flex:none;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--f-head);font-size:.85rem}
+.opt[aria-pressed=true] .k{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.confirm{border:2px solid var(--accent);background:var(--surface)}
+.score{font-family:var(--f-head);font-size:clamp(2rem,8vw,3.2rem);font-weight:700;color:var(--brand-ink)}
+.rev{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--surface);display:flex;flex-direction:column;gap:8px;min-width:0}
+.rev.ok{border-color:var(--ok)} .rev.bad{border-color:var(--bad)}
+textarea.copybox{width:100%;min-height:110px;font:500 .95rem var(--f-body);color:var(--fg);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app"></div>
+<script id="state" type="application/json">%%STATE%%<\/script>
+<script id="tpl" type="text/plain">%%TPL%%<\/script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var STATE=JSON.parse($('#state').textContent);
+var CLOSE='<'+'/script', PS='%%'+'STATE%%', PT='%%'+'TPL%%';
+var TPLRAW=$('#tpl').textContent.split('<\\/script').join(CLOSE);
+function esc(s){return s.split(CLOSE).join('<\\/script')}
+
+/* ---------- SHA-256 (للتحقق من كلمة السر دون تخزينها نصًا) ---------- */
+var K=[],H0=[];
+(function(){var n=2,c=0;while(c<64){var p=true;for(var i=2;i*i<=n;i++){if(n%i===0){p=false;break}}if(p){if(c<8)H0[c]=(Math.pow(n,1/2)%1)*4294967296|0;K[c]=(Math.pow(n,1/3)%1)*4294967296|0;c++}n++}})();
+function sha256(s){
+  var m=unescape(encodeURIComponent(s)),l=m.length,n=(((l+8)>>6)+1)*16,w=[],i,j;
+  for(i=0;i<n;i++)w[i]=0;
+  for(i=0;i<l;i++)w[i>>2]|=m.charCodeAt(i)<<(24-(i%4)*8);
+  w[l>>2]|=0x80<<(24-(l%4)*8);w[n-1]=l*8;
+  var h=H0.slice();
+  for(j=0;j<n;j+=16){
+    var x=w.slice(j,j+16);
+    for(i=16;i<64;i++){var a=x[i-15],b=x[i-2];x[i]=(x[i-16]+(((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3))+x[i-7]+(((b>>>17)|(b<<15))^((b>>>19)|(b<<13))^(b>>>10)))|0}
+    var A=h[0],B=h[1],C=h[2],D=h[3],E=h[4],F=h[5],G=h[6],Hh=h[7];
+    for(i=0;i<64;i++){
+      var t1=(Hh+(((E>>>6)|(E<<26))^((E>>>11)|(E<<21))^((E>>>25)|(E<<7)))+((E&F)^(~E&G))+K[i]+x[i])|0;
+      var t2=((((A>>>2)|(A<<30))^((A>>>13)|(A<<19))^((A>>>22)|(A<<10)))+((A&B)^(A&C)^(B&C)))|0;
+      Hh=G;G=F;F=E;E=(D+t1)|0;D=C;C=B;B=A;A=(t1+t2)|0;
+    }
+    var v=[A,B,C,D,E,F,G,Hh];for(i=0;i<8;i++)h[i]=(h[i]+v[i])|0;
+  }
+  return h.map(function(v){return ('00000000'+(v>>>0).toString(16)).slice(-8)}).join('');
+}
+function hashPw(p){return sha256('sa10|'+p)}
+
+/* ---------- أرقام هندية ---------- */
+var DIG='٠١٢٣٤٥٦٧٨٩';
+function r2(x){return Math.round((x+1e-9)*100)/100}
+function ar(n){return String(r2(n)).replace(/\d/g,function(d){return DIG[d]}).replace('.','٫')}
+function parseNum(s){
+  s=String(s).replace(/[٠-٩]/g,function(d){return DIG.indexOf(d)}).replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٫،,]/g,'.').replace(/\s+/g,'');
+  if(!/^\d*\.?\d+$/.test(s))return NaN;return parseFloat(s);
+}
+function ri(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function eq(s){return '<div class="eq">'+s+'</div>'}
+var SQ='سم²';
+
+/* ---------- روابط التواصل ---------- */
+var WA1='https://wa.me/96569943365', TG='https://t.me/+pjyOcLAg1NY3ZTRk',
+    IG='https://www.instagram.com/seddd.ra?avpt=MWhodWRzcWlseTE5cQ%3D%3D&utm_source=qr',
+    WAC='https://chat.whatsapp.com/EvF5xxo70IkLfv2zuS9FWO', WA2='https://wa.me/message/3SK6HSHQFVALJ1';
+var ICON={
+ wa:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path fill="#fff" d="M12 4.6a7.4 7.4 0 0 0-6.4 11.1L4.7 19.4l3.800-1A7.400 7.400 0 1 0 12 4.600zm0 1.400a6 6 0 1 1-3.300 11l-.3-.2-2.200.6.600-2.100-.2-.3A6 6 0 0 1 12 6zm-2.200 2.700c-.2 0-.4.1-.6.3-.4.5-.8 1.100-.4 2 .4.900 1.900 3 4.300 3.900 1 .4 1.700.3 2.100-.1.300-.3.500-.8.400-1.100l-1.400-.7c-.2-.1-.4-.1-.5.1l-.5.6c-.1.100-.3.100-.4.100-.7-.3-1.700-1-2.300-2-.1-.2 0-.3.100-.4l.4-.5c.1-.2.100-.3 0-.5l-.6-1.400c-.1-.3-.3-.4-.6-.4z"/></svg>',
+ tg:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path fill="#fff" d="M5.200 11.800 17.400 7c.6-.2 1.100.1.900 1l-2 9.600c-.1.700-.6.900-1.200.5l-3.200-2.400-1.600 1.500c-.2.200-.3.300-.6.300l.2-3.300 6-5.400c.3-.2-.1-.4-.4-.2l-7.400 4.700-3.200-1c-.7-.2-.7-.7.300-1.100z"/></svg>',
+ ig:'<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/><stop offset=".65" stop-color="#D62976"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs><circle cx="12" cy="12" r="12" fill="url(#igg)"/><rect x="6" y="6" width="12" height="12" rx="3.600" fill="none" stroke="#fff" stroke-width="1.600"/><circle cx="12" cy="12" r="2.800" fill="none" stroke="#fff" stroke-width="1.600"/><circle cx="15.600" cy="8.400" r=".9" fill="#fff"/></svg>',
+ wc:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#128C7E"/><circle cx="12" cy="9.200" r="2.400" fill="#fff"/><circle cx="7.600" cy="10.400" r="1.800" fill="#fff"/><circle cx="16.400" cy="10.400" r="1.800" fill="#fff"/><path fill="#fff" d="M7.800 17c0-2.200 1.800-3.800 4.200-3.800s4.200 1.600 4.200 3.800zM3.600 16.400c0-1.700 1.500-2.900 3.300-2.900.5 0 1 .1 1.400.3-.9.800-1.400 1.700-1.500 2.600zM20.400 16.400c0-1.700-1.500-2.900-3.300-2.900-.5 0-1 .1-1.400.3.900.8 1.400 1.700 1.500 2.600z"/></svg>'
+};
+function contactStack(){
+  function c(h,i,t,s){return '<a class="contact" href="'+h+'" target="_blank" rel="noopener">'+ICON[i]+'<span>'+t+(s?'<small>'+s+'</small>':'')+'</span></a>'}
+  return '<nav class="contacts" aria-label="روابط التواصل">'+
+    c(WA1,'wa','للاستفسار','<bdi dir="ltr">+96569943365</bdi>')+
+    c(TG,'tg','انضم هنا للمزيد من الملفات','مجموعة تيليجرام')+
+    c(IG,'ig','للمزيد من الاختبارات','انستجرام')+
+    c(WAC,'wc','انضم إلى مجتمع الواتس آب','مجتمع واتس آب')+'</nav>';
+}
+function eng(num,href){
+  return '<div class="eng"><div><strong>مهندسة الرياضيات</strong><span class="ph">'+num+'</span></div><a class="btn accent small" href="'+href+'" target="_blank" rel="noopener">للتواصل اضغط هنا</a></div>';
+}
+var ENG1=function(){return eng('+96569943365',WA1)};
+var ENG2=function(){return eng('+٢٠١٠٢٣٠٨٣٢٢٧',WA2)};
+
+/* ---------- رسومات SVG ---------- */
+function boxSVG(l,w,h,mono){
+  var W=360,Hh=250,pl=46,pr=44,pt=22,pb=34;
+  var k=Math.min((W-pl-pr)/(l+0.5*w),(Hh-pt-pb)/(h+0.38*w));
+  var dx=0.5*w*k,dy=0.38*w*k,lk=l*k,hk=h*k,x0=pl,y0=Hh-pb;
+  var cf=mono?'fa':'fb',ct='fa',cs=mono?'fa':'fc';
+  var front=[[x0,y0-hk],[x0+lk,y0-hk],[x0+lk,y0],[x0,y0]];
+  var top=[[x0,y0-hk],[x0+lk,y0-hk],[x0+lk+dx,y0-hk-dy],[x0+dx,y0-hk-dy]];
+  var side=[[x0+lk,y0-hk],[x0+lk+dx,y0-hk-dy],[x0+lk+dx,y0-dy],[x0+lk,y0]];
+  function pts(p){return p.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1)}).join(' ')}
+  return '<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="رسم متوازي مستطيلات">'+
+   '<polygon class="face '+ct+'" points="'+pts(top)+'"/><polygon class="face '+cs+'" points="'+pts(side)+'"/><polygon class="face '+cf+'" points="'+pts(front)+'"/>'+
+   '<text class="dim" x="'+(x0+lk/2)+'" y="'+(y0+20)+'" text-anchor="middle">ل = '+ar(l)+'</text>'+
+   '<text class="dim" x="'+(x0-6)+'" y="'+(y0-hk/2+4)+'" text-anchor="end">ع = '+ar(h)+'</text>'+
+   '<text class="dim" x="'+(x0+lk+dx+6)+'" y="'+(y0-dy/2+5)+'" text-anchor="start">ض = '+ar(w)+'</text></svg>';
+}
+function netBoxSVG(l,w,h){
+  var k=Math.min(320/(2*l+2*w),210/(h+2*w)),W=2*l*k+2*w*k+20,Hh=(h+2*w)*k+20,ox=10,oy=10+w*k;
+  function R(x,y,ww,hh,c,t){return '<rect class="face '+c+'" x="'+(ox+x*k).toFixed(1)+'" y="'+(oy+y*k).toFixed(1)+'" width="'+(ww*k).toFixed(1)+'" height="'+(hh*k).toFixed(1)+'"/><text class="area" x="'+(ox+(x+ww/2)*k).toFixed(1)+'" y="'+(oy+(y+hh/2)*k).toFixed(1)+'">'+t+'</text>'}
+  var s=R(0,0,l,h,'fb',ar(l*h))+R(l,0,w,h,'fc',ar(w*h))+R(l+w,0,l,h,'fb',ar(l*h))+R(2*l+w,0,w,h,'fc',ar(w*h))+R(0,-w,l,w,'fa',ar(l*w))+R(0,h,l,w,'fa',ar(l*w));
+  return '<svg viewBox="0 0 '+W.toFixed(0)+' '+Hh.toFixed(0)+'" role="img" aria-label="شبكة متوازي المستطيلات">'+s+'</svg>';
+}
+function cubeNetSVG(s){
+  var u=70,W=4*u+20,Hh=3*u+20,sq=[[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]],o='';
+  sq.forEach(function(p){o+='<rect class="face fa" x="'+(10+p[0]*u)+'" y="'+(10+p[1]*u)+'" width="'+u+'" height="'+u+'"/><text class="area" x="'+(10+p[0]*u+u/2)+'" y="'+(10+p[1]*u+u/2)+'">'+(s?ar(s*s):'')+'</text>'});
+  return '<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="شبكة المكعب من ٦ مربعات">'+o+'</svg>';
+}
+function pyrSVG(b,h){
+  return '<svg viewBox="0 0 360 250" role="img" aria-label="رسم هرم رباعي">'+
+   '<polygon class="face fa" points="70,200 230,200 300,150 140,150" opacity=".85"/>'+
+   '<polygon class="face fc" points="180,24 230,200 300,150"/>'+
+   '<polygon class="face fb" points="180,24 70,200 230,200"/>'+
+   '<line class="dash" x1="180" y1="24" x2="150" y2="200"/>'+
+   '<text class="dim" x="150" y="226" text-anchor="middle">ب = '+ar(b)+'</text>'+
+   '<text class="dim" x="160" y="118" text-anchor="end">ع = '+ar(h)+'</text></svg>';
+}
+function pyrNetSVG(b,h){
+  var k=Math.min(300/(b+2*h),300/(b+2*h)),S=(b+2*h)*k+20,ox=10,hk=h*k,bk=b*k;
+  function P(a){return '<polygon class="face fb" points="'+a.map(function(q){return (ox+q[0]).toFixed(1)+','+(ox+q[1]).toFixed(1)}).join(' ')+'"/>'}
+  var o='<rect class="face fa" x="'+(ox+hk)+'" y="'+(ox+hk)+'" width="'+bk+'" height="'+bk+'"/><text class="area" x="'+(ox+hk+bk/2)+'" y="'+(ox+hk+bk/2)+'">'+ar(b*b)+'</text>';
+  o+=P([[hk,hk],[hk+bk,hk],[hk+bk/2,0]])+P([[hk,hk+bk],[hk+bk,hk+bk],[hk+bk/2,2*hk+bk]])+P([[hk,hk],[hk,hk+bk],[0,hk+bk/2]])+P([[hk+bk,hk],[hk+bk,hk+bk],[2*hk+bk,hk+bk/2]]);
+  var t=ar(b*h/2),c=hk+bk/2;
+  o+='<text class="area" x="'+(ox+c)+'" y="'+(ox+hk*0.62)+'">'+t+'</text><text class="area" x="'+(ox+c)+'" y="'+(ox+hk+bk+hk*0.4)+'">'+t+'</text><text class="area" x="'+(ox+hk*0.38)+'" y="'+(ox+c)+'">'+t+'</text><text class="area" x="'+(ox+hk+bk+hk*0.62)+'" y="'+(ox+c)+'">'+t+'</text>';
+  return '<svg viewBox="0 0 '+S.toFixed(0)+' '+S.toFixed(0)+'" role="img" aria-label="شبكة الهرم الرباعي">'+o+'</svg>';
+}
+function fig(svg,cap){return '<figure class="viz">'+svg+'<figcaption>'+cap+'</figcaption></figure>'}
+
+/* ---------- مولّدات المسائل (أرقام عشوائية جديدة) ---------- */
+function distinct3(a,b,c){return a!==b&&b!==c&&a!==c}
+function gCuboid(dec){
+  var l,w,h;do{l=ri(5,12);w=ri(3,9);h=ri(2,8)}while(!distinct3(l,w,h));
+  if(dec)l=pick([2.5,3.5,4.5,5.5,4.1,6.5,7.5]);
+  var a=r2(l*w),b=r2(l*h),c=r2(w*h),sa=r2(2*a+2*b+2*c);
+  var n=pick(['صندوق هدايا','حوض سمك','علبة ألوان','خزانة صغيرة']);
+  return {kind:'cuboid',l:l,w:w,h:h,ans:sa,unit:SQ,
+   text:'يُراد طلاء '+n+' على شكل متوازي مستطيلات من الخارج، أبعاده: ل = '+ar(l)+' سم، ض = '+ar(w)+' سم، ع = '+ar(h)+' سم. أوجد مساحة سطحه.',
+   viz:boxSVG(l,w,h),
+   steps:['نكتب القانون:'+eq('م = ٢ ل ض + ٢ ل ع + ٢ ض ع'),
+    'نعوّض الأبعاد في القانون:'+eq('م = ٢ × ('+ar(l)+' × '+ar(w)+') + ٢ × ('+ar(l)+' × '+ar(h)+') + ٢ × ('+ar(w)+' × '+ar(h)+')'),
+    'نحسب مساحة كل وجه:'+eq(ar(l)+' × '+ar(w)+' = '+ar(a)+' ، '+ar(l)+' × '+ar(h)+' = '+ar(b)+' ، '+ar(w)+' × '+ar(h)+' = '+ar(c)),
+    'نضرب في ٢ ثم نجمع:'+eq('م = '+ar(2*a)+' + '+ar(2*b)+' + '+ar(2*c)+' = '+ar(sa)+' '+SQ)],
+   final:'مساحة السطح = '+ar(sa)+' '+SQ};
+}
+function gCube(){
+  var s=ri(3,12),sa=6*s*s,who=pick([['وضعت ريم','بلّورة'],['وضع سلمان','مجسمًا']]);
+  return {kind:'cube',s:s,ans:sa,unit:SQ,
+   text:who[0]+' '+who[1]+' داخل صندوق مكعب الشكل طول ضلعه '+ar(s)+' سم. أوجد مساحة سطح الصندوق.',
+   viz:boxSVG(s,s,s,true),
+   steps:['نكتب قانون مساحة سطح المكعب:'+eq('م = ٦ ل²'),
+    'نعوّض طول الضلع:'+eq('م = ٦ × ('+ar(s)+')²'),
+    'نحسب مربع الضلع:'+eq(ar(s)+' × '+ar(s)+' = '+ar(s*s)),
+    'نضرب في ٦:'+eq('م = ٦ × '+ar(s*s)+' = '+ar(sa)+' '+SQ)],
+   final:'مساحة سطح الصندوق = '+ar(sa)+' '+SQ};
+}
+function gPyr(){
+  var b=ri(4,12),h=ri(5,13);if((b*h)%2)b+=1;
+  var tri=b*h/2,sa=b*b+4*tri;
+  return {kind:'pyr',b:b,h:h,ans:sa,unit:SQ,
+   text:'هرم رباعي قائم، قاعدته مربعة طول ضلعها '+ar(b)+' سم، وارتفاع كل وجه مثلثي من أوجهه '+ar(h)+' سم. أوجد مساحة سطح الهرم.',
+   viz:pyrSVG(b,h),
+   steps:['شبكة الهرم: مربع طول ضلعه '+ar(b)+' سم، و٤ مثلثات متطابقة قاعدة كل منها '+ar(b)+' سم وارتفاعها '+ar(h)+' سم.',
+    'نكتب القانون:'+eq('م = مساحة المربع + ٤ × مساحة المثلث'),
+    'نعوّض:'+eq('م = ('+ar(b)+' × '+ar(b)+') + ٤ × (½ × '+ar(b)+' × '+ar(h)+')'),
+    'نحسب كل جزء:'+eq(ar(b*b)+' + ٤ × '+ar(tri)+' = '+ar(b*b)+' + '+ar(4*tri)+' = '+ar(sa)+' '+SQ)],
+   final:'مساحة سطح الهرم = '+ar(sa)+' '+SQ};
+}
+function gen(kind){return kind==='cube'?gCube():kind==='pyr'?gPyr():gCuboid(false)}
+
+/* حالات مقارنة: مكعب مقابل هرم (قد تتساوى المساحتان) */
+function eqSolutions(){var o=[];for(var e=2;e<=10;e++)for(var b=2;b<=16;b++)for(var h=2;h<=16;h++)if(b*b+2*b*h===6*e*e)o.push({e:e,b:b,h:h});return o}
+var EQS=eqSolutions();
+function genCompare(forceEq){
+  var e,b,h,same=forceEq!==undefined?forceEq:Math.random()<0.5;
+  if(same&&EQS.length){var p=pick(EQS);e=p.e;b=p.b;h=p.h}
+  else{do{e=ri(3,8);b=ri(3,10);h=ri(3,11)}while(b*b+2*b*h===6*e*e);same=false}
+  var c=6*e*e,p2=b*b+2*b*h;
+  return {e:e,b:b,h:h,c:c,p:p2,same:c===p2};
+}
+function compareExplain(g){
+  return 'مساحة سطح المكعب = ٦ × ('+ar(g.e)+')² = '+ar(g.c)+' '+SQ+'. مساحة سطح الهرم = ('+ar(g.b)+' × '+ar(g.b)+') + ٤ × (½ × '+ar(g.b)+' × '+ar(g.h)+') = '+ar(g.p)+' '+SQ+'. '+(g.same?'المساحتان متساويتان.':(g.c>g.p?'مساحة المكعب أكبر.':'مساحة الهرم أكبر.'));
+}
+
+/* ---------- حالة الصفحة ---------- */
+var S={screen:'gate',sec:'prism',v:{l:4,w:3,h:2,s:5,b:5,ph:6},ex:{kind:'cuboid',p:null,n:0},pr:{p:null,right:0,total:0,msg:''},th:{a:null,b:null,pickA:null,pickB:null},quiz:null,nm:'',confirm:false};
+var app=$('#app');
+try{if(sessionStorage.getItem('sa_ok')===STATE.ph)S.screen='home'}catch(e){}
+
+/* ---------- الواجهات ---------- */
+function hero(){
+  return '<header class="hero"><div><span class="grade">الصف السابع <bdi dir="ltr">7</bdi></span>'+
+   '<h1>مساحة السطح – القوانين الجبرية لمساحة السطح</h1><div class="en">Surface Area – Algebraic Formulas Of Surface Area</div></div>'+
+   boxSVG(4,3,2).replace('<svg ','<svg style="max-width:190px" ')+'</header>';
+}
+function gateHTML(){
+  return hero()+'<section class="gate">'+contactStack()+
+  '<div class="card stack"><h2>الدخول إلى الدرس</h2><p class="note">اكتب كلمة السر التي أعطاك إياها المعلم لفتح الشرح التفاعلي والاختبار.</p>'+
+  '<form id="gf" class="stack" autocomplete="off"><div class="field"><label for="pw">كلمة السر</label><div class="pwrow"><input id="pw" type="password" autocomplete="off" required><button type="button" class="btn ghost small" data-act="showpw">إظهار</button></div></div>'+
+  '<button class="btn" type="submit">دخول</button><div class="msg err" id="gmsg" role="alert"></div></form>'+
+  '<details class="teacher"><summary>إعدادات المعلم: تغيير كلمة السر</summary><form id="tf" class="stack" style="margin-top:12px" autocomplete="off">'+
+  '<div class="field"><label for="tc">كلمة السر الحالية</label><input id="tc" type="password" autocomplete="off"></div>'+
+  '<div class="field"><label for="tn">كلمة السر الجديدة (٤ أحرف أو أكثر)</label><input id="tn" type="password" autocomplete="off"></div>'+
+  '<div class="field"><label for="tn2">تأكيد كلمة السر الجديدة</label><input id="tn2" type="password" autocomplete="off"></div>'+
+  '<button class="btn accent" type="submit">حفظ كلمة السر الجديدة</button><div class="msg" id="tmsg" role="status"></div>'+
+  '<p class="note">يحفظ التغيير صاحب الصفحة فقط، وبعد الحفظ تعمل الكلمة الجديدة لجميع الطلاب.</p></form></details></div></section>';
+}
+function homeHTML(){
+  return hero()+'<section class="choices">'+
+  '<button class="choice" data-act="go" data-to="learn"><span class="tag">القسم الأول</span><h2>شرح تفاعلي</h2><p>حرّك الأبعاد وشاهد مساحة السطح تتغير، ثم حلّ مسائل بأرقام جديدة في كل مرة.</p><span class="btn small">ابدأ الشرح</span></button>'+
+  '<button class="choice" data-act="go" data-to="quizIntro"><span class="tag">القسم الثاني</span><h2>الاختبار</h2><p>عشرة أسئلة من أفكار الدرس بأرقام مختلفة. يبدأ الاختبار بعد كتابة اسم الطالب وتأكيده.</p><span class="btn small accent">ادخل الاختبار</span></button></section>'+
+  '<div class="row"><button class="btn ghost small" data-act="logout">تسجيل الخروج</button></div>';
+}
+function topbar(t){return '<div class="top"><button class="btn ghost small" data-act="go" data-to="home">← الرئيسية</button><span class="crumb">الصف السابع · '+t+'</span></div>'}
+
+var SECS=[['prism','المنشور'],['cube','المكعب'],['pyr','الهرم'],['ex','مسألة خطوة بخطوة'],['pr','دورك الآن'],['th','مهارات التفكير']];
+function learnHTML(){
+  var chips=SECS.map(function(s){return '<button class="chip" data-act="sec" data-to="'+s[0]+'" '+(S.sec===s[0]?'aria-current="true"':'')+'>'+s[1]+'</button>'}).join('');
+  return topbar('الشرح التفاعلي')+ENG1()+'<div class="chips" role="tablist">'+chips+'</div><section class="card stack" id="secBody">'+secBody()+'</section>';
+}
+function slider(id,label,min,max,val){return '<div class="slider"><label for="'+id+'">'+label+' = <b id="lv-'+id+'">'+ar(val)+'</b></label><input type="range" id="'+id+'" data-k="'+id+'" min="'+min+'" max="'+max+'" value="'+val+'"></div>'}
+function secBody(){
+  var v=S.v;
+  if(S.sec==='prism')return '<h2>١) مساحة سطح المنشور</h2><p>تخيّل أنك تريد تغليف صندوق هدية بورق ملوّن. لمعرفة كمية الورق نحسب مساحة جميع أوجه الصندوق، وهذه هي <b>مساحة السطح</b>. غيّر الأبعاد وراقب الشبكة والحساب.</p>'+
+    '<div class="sliders">'+slider('l','الطول ل',2,12,v.l)+slider('w','العرض ض',2,10,v.w)+slider('h','الارتفاع ع',2,10,v.h)+'</div><div id="out" class="stack">'+outPrism()+'</div>';
+  if(S.sec==='cube')return '<h2>٢) مساحة سطح المكعّب</h2><p>المكعّب هو شبه مكعّب أبعاده متساوية، فكل أوجهه الستة مربعات متطابقة.</p>'+
+    '<div class="sliders">'+slider('s','طول الضلع ل',1,12,v.s)+'</div><div id="out" class="stack">'+outCube()+'</div>';
+  if(S.sec==='pyr')return '<h2>٣) مساحة سطح الهرم الرباعي القائم</h2><p>شبكة الهرم مربع في المنتصف و٤ مثلثات متطابقة. غيّر طول ضلع القاعدة وارتفاع الوجه المثلثي.</p>'+
+    '<div class="sliders">'+slider('b','ضلع القاعدة ب',2,12,v.b)+slider('ph','ارتفاع الوجه المثلثي ع',2,14,v.ph)+'</div><div id="out" class="stack">'+outPyr()+'</div>';
+  if(S.sec==='ex')return exHTML();
+  if(S.sec==='pr')return prHTML();
+  return thHTML();
+}
+function outPrism(){
+  var l=S.v.l,w=S.v.w,h=S.v.h,a=l*w,b=l*h,c=w*h,sa=2*a+2*b+2*c;
+  return '<div class="two">'+fig(boxSVG(l,w,h),'المنشور بأبعاده')+fig(netBoxSVG(l,w,h),'شبكة المنشور: مساحة كل وجه')+'</div>'+
+  '<table class="tbl"><thead><tr><th>الوجه</th><th>مساحة الوجه الواحد</th><th>عدد الوجوه</th><th>المجموع</th></tr></thead><tbody>'+
+  '<tr><td><span class="swatch fa"></span>العلوي والسفلي (ل × ض)</td><td class="num">'+ar(a)+'</td><td>٢</td><td class="num">'+ar(2*a)+'</td></tr>'+
+  '<tr><td><span class="swatch fb"></span>الأمامي والخلفي (ل × ع)</td><td class="num">'+ar(b)+'</td><td>٢</td><td class="num">'+ar(2*b)+'</td></tr>'+
+  '<tr><td><span class="swatch fc"></span>الجانبيان (ض × ع)</td><td class="num">'+ar(c)+'</td><td>٢</td><td class="num">'+ar(2*c)+'</td></tr></tbody></table>'+
+  '<p class="note">كل وجهين متقابلين متطابقان ولهما المساحة نفسها.</p><div class="formula">م = ٢ ل ض + ٢ ل ع + ٢ ض ع</div>'+
+  eq('م = ٢ × ('+ar(l)+' × '+ar(w)+') + ٢ × ('+ar(l)+' × '+ar(h)+') + ٢ × ('+ar(w)+' × '+ar(h)+') = '+ar(2*a)+' + '+ar(2*b)+' + '+ar(2*c))+
+  '<div class="final">مساحة السطح = '+ar(sa)+' '+SQ+'</div>';
+}
+function outCube(){
+  var s=S.v.s,sq=s*s;
+  return '<div class="two">'+fig(boxSVG(s,s,s,true),'مكعّب طول ضلعه '+ar(s))+fig(cubeNetSVG(s),'٦ مربعات، مساحة كل منها '+ar(sq))+'</div>'+
+  '<div class="formula">مساحة سطح المكعّب: م = ٦ ل²</div>'+
+  eq('م = ٦ × ('+ar(s)+')² = ٦ × '+ar(sq)+' = '+ar(6*sq)+' '+SQ)+
+  '<p class="note">وهي النتيجة نفسها لقانون المنشور عندما ل = ض = ع: ٢ل² + ٢ل² + ٢ل² = ٦ل².</p>'+
+  '<div class="final">مساحة السطح = '+ar(6*sq)+' '+SQ+'</div>';
+}
+function outPyr(){
+  var b=S.v.b,h=S.v.ph,tri=b*h/2,sa=b*b+4*tri;
+  return '<div class="two">'+fig(pyrSVG(b,h),'هرم رباعي قائم')+fig(pyrNetSVG(b,h),'الشبكة: مربع مساحته '+ar(b*b)+' و٤ مثلثات مساحة كل منها '+ar(tri))+'</div>'+
+  '<div class="formula">مساحة سطح الهرم = مساحة المربع + ٤ × مساحة المثلث</div>'+
+  eq('م = ('+ar(b)+' × '+ar(b)+') + ٤ × (½ × '+ar(b)+' × '+ar(h)+') = '+ar(b*b)+' + ٤ × '+ar(tri)+' = '+ar(sa)+' '+SQ)+
+  '<p class="note">الطريقة المختصرة عندما تكون الأوجه المثلثية متطابقة: مساحة القاعدة + (عدد الأوجه المثلثية × مساحة أي منها).</p>'+
+  '<div class="final">مساحة السطح = '+ar(sa)+' '+SQ+'</div>';
+}
+var KINDS=[['cuboid','متوازي مستطيلات'],['cube','مكعّب'],['pyr','هرم رباعي']];
+function exHTML(){
+  if(!S.ex.p)S.ex.p=gen(S.ex.kind);
+  var p=S.ex.p,n=S.ex.n,steps=p.steps.slice(0,n).map(function(s){return '<div class="step">'+s+'</div>'}).join('');
+  return '<h2>٤) مسألة بأرقام جديدة، حلّها خطوة بخطوة</h2><div class="row">'+KINDS.map(function(k){return '<button class="chip" data-act="exk" data-to="'+k[0]+'" '+(S.ex.kind===k[0]?'aria-current="true"':'')+'>'+k[1]+'</button>'}).join('')+
+   '<button class="btn ghost small" data-act="exnew">مسألة جديدة بأرقام جديدة</button></div>'+
+   '<div class="two"><div class="stack"><p><b>المسألة:</b> '+p.text+'</p></div>'+fig(p.viz,'الشكل')+'</div>'+
+   '<div class="steps">'+steps+'</div>'+(n>=p.steps.length?'<div class="final">'+p.final+'</div>':'')+
+   '<div class="row"><button class="btn" data-act="exnext" '+(n>=p.steps.length?'disabled':'')+'>'+(n===0?'أظهر الخطوة الأولى':'الخطوة التالية')+'</button>'+(n>0?'<button class="btn ghost small" data-act="exreset">إخفاء الخطوات</button>':'')+'</div>';
+}
+function prHTML(){
+  if(!S.pr.p)S.pr.p=gen(pick(['cuboid','cube','pyr','cuboid']));
+  var p=S.pr.p,solved=S.pr.msg==='ok';
+  var sol=S.pr.show?'<div class="steps">'+p.steps.map(function(s){return '<div class="step">'+s+'</div>'}).join('')+'</div><div class="final">'+p.final+'</div>':'';
+  return '<h2>٥) دورك الآن</h2><p class="note">حلّ بنفسك ثم تحقق. الأرقام تتغير في كل مسألة. النتيجة: <b>'+ar(S.pr.right)+'</b> صحيحة من <b>'+ar(S.pr.total)+'</b>.</p>'+
+   '<div class="two"><div class="stack"><p><b>المسألة:</b> '+p.text+'</p>'+
+   '<div class="field"><label for="ans">إجابتك (مساحة السطح بوحدة '+SQ+')</label><input id="ans" class="ans" type="text" inputmode="decimal" autocomplete="off" '+(solved?'disabled':'')+'></div>'+
+   '<div class="row"><button class="btn" data-act="check" '+(solved?'disabled':'')+'>تحقق</button><button class="btn ghost small" data-act="prhint">تلميح</button><button class="btn ghost small" data-act="prshow">أظهر الحل</button><button class="btn accent small" data-act="prnew">مسألة جديدة</button></div>'+
+   '<div class="msg '+(S.pr.msg==='ok'?'ok':'err')+'" id="prmsg" role="status">'+(S.pr.text||'')+'</div></div>'+fig(p.viz,'الشكل')+'</div>'+sol;
+}
+function thHTML(){
+  if(!S.th.a){var s=ri(3,9);S.th.a={s:s,sa:6*s*s,wrong:s*s/2,flip:Math.random()<0.5};S.th.pickA=null}
+  if(!S.th.b){S.th.b=genCompare();S.th.pickB=null}
+  var a=S.th.a,g=S.th.b,y=a.s*a.s;
+  var n1=a.flip?['هدى','ليلى']:['ليلى','هدى'];
+  var sayRight=n1[0],sayWrong=n1[1];
+  var A='<div class="stack"><h3>أ) من الإجابة الصحيحة؟</h3><p>أوجدت كل من '+sayRight+' و'+sayWrong+' طول ضلع مكعب مساحته السطحية '+ar(a.sa)+' '+SQ+':</p>'+
+   '<div class="two"><div class="card soft"><b>'+sayRight+'</b>'+eq(ar(a.sa)+' ÷ ٦ = '+ar(y)+'')+'العدد الذي مربّعه '+ar(y)+' هو '+ar(a.s)+'، إذًا طول الضلع '+ar(a.s)+' سم.</div>'+
+   '<div class="card soft"><b>'+sayWrong+'</b>'+eq(ar(a.sa)+' ÷ ٦ = '+ar(y)+'')+'العدد الذي مربّعه '+ar(y)+' هو '+ar(a.wrong)+'، إذًا طول الضلع '+ar(a.wrong)+' سم.</div></div>'+
+   '<div class="row"><button class="chip" data-act="pickA" data-to="r" '+(S.th.pickA==='r'?'aria-current="true"':'')+'>'+sayRight+'</button><button class="chip" data-act="pickA" data-to="w" '+(S.th.pickA==='w'?'aria-current="true"':'')+'>'+sayWrong+'</button></div>'+
+   (S.th.pickA?'<div class="'+(S.th.pickA==='r'?'final':'rev bad')+'">'+(S.th.pickA==='r'?'صحيح. ':'ليست الإجابة الصحيحة. ')+'نتحقق بالتربيع: ('+ar(a.s)+')² = '+ar(y)+' وهذا يساوي '+ar(a.sa)+' ÷ ٦، أما ('+ar(a.wrong)+')² = '+ar(r2(a.wrong*a.wrong))+' فلا يساوي '+ar(y)+'. الإجابة الصحيحة هي إجابة '+sayRight+'.</div>':'')+
+   '<button class="btn ghost small" data-act="thnewA">أرقام جديدة</button></div>';
+  var B='<div class="stack"><h3>ب) هل المساحتان متساويتان؟</h3><p>رسم نوّاف مكعبًا طول حرفه '+ar(g.e)+' سم، ورسم أيضًا هرمًا رباعيًا قائمًا قاعدته مربعة طول ضلعها '+ar(g.b)+' سم وارتفاع كل وجه مثلثي '+ar(g.h)+' سم. يعتقد نوّاف أن للمجسمين المساحة الكلية نفسها للسطح. هل اعتقاده صحيح؟</p>'+
+   '<div class="row"><button class="chip" data-act="pickB" data-to="y" '+(S.th.pickB==='y'?'aria-current="true"':'')+'>نعم، صحيح</button><button class="chip" data-act="pickB" data-to="n" '+(S.th.pickB==='n'?'aria-current="true"':'')+'>لا، غير صحيح</button></div>'+
+   (S.th.pickB?'<div class="'+((S.th.pickB==='y')===g.same?'final':'rev bad')+'">'+((S.th.pickB==='y')===g.same?'إجابة صحيحة. ':'راجع الحساب: ')+compareExplain(g)+'</div>':'')+
+   '<button class="btn ghost small" data-act="thnewB">أرقام جديدة</button></div>';
+  return '<h2>٦) مهارات التفكير العليا</h2>'+A+'<hr style="border:0;border-top:1.5px dashed var(--line);width:100%">'+B;
+}
+
+/* ---------- الاختبار ---------- */
+function genQuiz(){
+  var Q=[],o=function(arr,correct){var seen={},list=[];arr.forEach(function(x){var k=r2(x);if(k>0&&!seen[k]&&k!==r2(correct)){seen[k]=1;list.push(k)}});return list};
+  function mc(correct,wrong){var w=shuffle(o(wrong,correct)).slice(0,3),i=100;while(w.length<3){var x=r2(correct+ri(2,9)*(Math.random()<.5?1:-1));if(x>0&&w.indexOf(x)<0&&x!==r2(correct))w.push(x)}
+    return shuffle([{t:ar(correct),ok:true}].concat(w.map(function(x){return {t:ar(x),ok:false}})))}
+  function withUnit(opts){return opts.map(function(x){return {t:x.t+' '+SQ,ok:x.ok}})}
+  // 1 متوازي مستطيلات
+  var p=gCuboid(false);
+  Q.push({q:'أوجد مساحة سطح متوازي مستطيلات أبعاده: ل = '+ar(p.l)+' سم، ض = '+ar(p.w)+' سم، ع = '+ar(p.h)+' سم.',viz:p.viz,
+    opts:withUnit(mc(p.ans,[p.l*p.w+p.l*p.h+p.w*p.h,p.l*p.w*p.h,2*p.l*p.w+2*p.l*p.h+p.w*p.h,p.ans+p.w*p.h])),steps:p.steps,final:p.final});
+  // 2 مكعب
+  var c=gCube();
+  Q.push({q:'مكعّب طول ضلعه '+ar(c.s)+' سم. ما مساحة سطحه؟',viz:c.viz,opts:withUnit(mc(c.ans,[6*c.s,c.s*c.s*c.s,4*c.s*c.s,12*c.s])),steps:c.steps,final:c.final});
+  // 3 هرم
+  var y=gPyr();
+  Q.push({q:'هرم رباعي قائم قاعدته مربعة طول ضلعها '+ar(y.b)+' سم، وارتفاع كل وجه مثلثي '+ar(y.h)+' سم. ما مساحة سطحه؟',viz:y.viz,
+    opts:withUnit(mc(y.ans,[y.b*y.b+4*y.b*y.h,y.b*y.b+y.b*y.h,4*(y.b*y.h/2),y.b*y.b+2*y.b*y.h/2])),steps:y.steps,final:y.final});
+  // 4 كسور عشرية
+  var d=gCuboid(true);
+  Q.push({q:'أوجد مساحة سطح شبه المكعّب حيث ل = '+ar(d.l)+' سم، ض = '+ar(d.w)+' سم، ع = '+ar(d.h)+' سم.',viz:d.viz,
+    opts:withUnit(mc(d.ans,[d.ans/2,d.l*d.w*d.h,d.ans+d.w*d.h,2*(d.l*d.w+d.l*d.h)])),steps:d.steps,final:d.final});
+  // 5 إيجاد ضلع المكعب
+  var s=ri(3,9),sa=6*s*s;
+  Q.push({q:'مكعّب مساحته السطحية '+ar(sa)+' '+SQ+'. ما طول ضلعه؟',opts:[].concat((function(){var w=shuffle(o([s*s,s*s/2,s+1,s-1,sa/36],s)).slice(0,3);return shuffle([{t:ar(s)+' سم',ok:true}].concat(w.map(function(x){return {t:ar(x)+' سم',ok:false}})))})()),
+    steps:['م = ٦ ل² ، إذن ل² = م ÷ ٦','نقسم: '+ar(sa)+' ÷ ٦ = '+ar(s*s),'العدد الذي مربّعه '+ar(s*s)+' هو '+ar(s)],final:'طول الضلع = '+ar(s)+' سم'});
+  // 6 تكلفة
+  var b2=pick([4,6,8,10]),h2=ri(3,7),pr=ri(3,9),S6=b2*b2+2*b2*h2,cost=S6*pr;
+  Q.push({q:'يريد صاحب مطعم تصميم خزّان ماء على شكل هرم رباعي قائم، قاعدته مربعة طول ضلعها '+ar(b2)+' م وارتفاع كل وجه مثلثي '+ar(h2)+' م. إذا كانت تكلفة المتر المربع من المعدن '+ar(pr)+' دنانير، فما المبلغ الكلي اللازم لتصنيع الخزّان؟',
+    opts:(function(){var w=shuffle(o([S6,S6*pr/2,(b2*b2+4*b2*h2)*pr,(b2*b2+b2*h2)*pr,cost+pr*b2],cost)).slice(0,3);return shuffle([{t:ar(cost)+' دينارًا',ok:true}].concat(w.map(function(x){return {t:ar(x)+' دينارًا',ok:false}})))})(),
+    steps:['مساحة الهرم = ('+ar(b2)+' × '+ar(b2)+') + ٤ × (½ × '+ar(b2)+' × '+ar(h2)+') = '+ar(S6)+' م²','التكلفة = '+ar(S6)+' × '+ar(pr)+' = '+ar(cost)+' دينارًا'],final:'المبلغ الكلي = '+ar(cost)+' دينارًا'});
+  // 7 شبكة من ٦ مربعات
+  var e=pick([0.2,0.3,0.4,0.5,0.6,0.7]),se=r2(6*e*e);
+  Q.push({q:'شبكة تتكون من ٦ مربعات متطابقة، طول ضلع كل منها '+ar(e)+' سم، وتُكوّن مجسمًا. ما مساحة سطح هذا المجسم؟',viz:cubeNetSVG(0),
+    opts:withUnit(mc(se,[6*e,e*e,4*e*e,r2(e*e*5)])),steps:['المجسم المتكوّن مكعّب، ومساحة سطحه = ٦ ل²','م = ٦ × ('+ar(e)+')² = ٦ × '+ar(r2(e*e))+' = '+ar(se)+' '+SQ],final:'مساحة السطح = '+ar(se)+' '+SQ});
+  // 8 ليلى وهدى
+  var s8=ri(3,9),sa8=6*s8*s8,wrong=s8*s8/2,flip=Math.random()<0.5;
+  var nr=flip?'هدى':'ليلى',nw=flip?'ليلى':'هدى';
+  Q.push({q:'أوجدت كل من '+nr+' و'+nw+' طول ضلع مكعب مساحته السطحية '+ar(sa8)+' '+SQ+'. '+nr+': '+ar(sa8)+' ÷ ٦ = '+ar(s8*s8)+'، والعدد الذي مربّعه '+ar(s8*s8)+' هو '+ar(s8)+'، إذن الضلع '+ar(s8)+' سم. '+nw+': '+ar(sa8)+' ÷ ٦ = '+ar(s8*s8)+'، والعدد الذي مربّعه '+ar(s8*s8)+' هو '+ar(wrong)+'، إذن الضلع '+ar(wrong)+' سم. أيهما كانت إجابتها صحيحة؟',
+    opts:shuffle([{t:nr,ok:true},{t:nw,ok:false},{t:'كلتاهما',ok:false},{t:'لا إحداهما',ok:false}]),
+    steps:['نتحقق بالتربيع: ('+ar(s8)+')² = '+ar(s8*s8),'أما ('+ar(wrong)+')² = '+ar(r2(wrong*wrong))+' وهو لا يساوي '+ar(s8*s8)],final:'الإجابة الصحيحة: '+nr});
+  // 9 مقارنة
+  var g=genCompare();
+  Q.push({q:'رسم نوّاف مكعبًا طول حرفه '+ar(g.e)+' سم، ورسم هرمًا رباعيًا قائمًا قاعدته مربعة طول ضلعها '+ar(g.b)+' سم وارتفاع كل وجه مثلثي '+ar(g.h)+' سم. يعتقد نوّاف أن المساحة الكلية للسطح متساوية. ما الصحيح؟',
+    opts:shuffle([{t:'اعتقاده صحيح، المساحتان متساويتان',ok:g.same},{t:'اعتقاده غير صحيح، مساحة المكعب أكبر',ok:!g.same&&g.c>g.p},{t:'اعتقاده غير صحيح، مساحة الهرم أكبر',ok:!g.same&&g.c<g.p}]),
+    steps:[compareExplain(g)],final:g.same?'المساحتان متساويتان':(g.c>g.p?'مساحة المكعب أكبر':'مساحة الهرم أكبر')});
+  // 10 مساحة وجه مثلثي
+  var b10=ri(4,12),h10=ri(5,13);if((b10*h10)%2)b10+=1;var t10=b10*h10/2;
+  Q.push({q:'في هرم رباعي قائم طول ضلع قاعدته '+ar(b10)+' سم وارتفاع كل وجه مثلثي '+ar(h10)+' سم، ما مساحة وجه مثلثي واحد؟',viz:pyrSVG(b10,h10),
+    opts:withUnit(mc(t10,[b10*h10,4*t10,b10*b10,t10+b10])),steps:['مساحة المثلث = ½ × القاعدة × الارتفاع','= ½ × '+ar(b10)+' × '+ar(h10)+' = '+ar(t10)+' '+SQ],final:'مساحة الوجه المثلثي = '+ar(t10)+' '+SQ});
+  return Q.map(function(q){q.opts=q.opts.slice(0,4);return q});
+}
+function quizIntroHTML(){
+  var st=S.confirm?'<div class="card confirm stack"><h2>تأكيد الاسم قبل البدء</h2><p>اسم الطالب: <b>'+escH(S.nm)+'</b></p><p class="note">سيظهر هذا الاسم في نتيجة الاختبار، ولا يمكن تغييره بعد البدء. تأكد من كتابته بشكل صحيح.</p><div class="row"><button class="btn" data-act="startq">نعم، الاسم صحيح، ابدأ الاختبار</button><button class="btn ghost" data-act="editname">تعديل الاسم</button></div></div>':
+   '<div class="card stack"><h2>اكتب اسمك أولًا</h2><p>كتابة اسم الطالب <b>إجبارية</b> ولا يبدأ الاختبار بدونها.</p><div class="field"><label for="nm">اسم الطالب</label><input id="nm" type="text" autocomplete="name" maxlength="60" value="'+escH(S.nm)+'" placeholder="مثال: أحمد محمد"></div><div class="msg err" id="nmsg" role="alert"></div><button class="btn accent" id="go" data-act="confirmname">متابعة</button></div>';
+  return topbar('الاختبار')+ENG2()+'<section class="card stack"><h1 style="font-size:1.6rem">اختبار مساحة السطح</h1><p>١٠ أسئلة اختيار من متعدد من أفكار الدرس (متوازي المستطيلات، المكعب، الهرم الرباعي، التكلفة، والتفكير) بأرقام جديدة في كل مرة. اختر إجابة واحدة لكل سؤال ثم اضغط «التالي».</p></section>'+st;
+}
+function escH(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function quizHTML(){
+  var Q=S.quiz,i=Q.i,q=Q.qs[i],last=i===Q.qs.length-1;
+  var opts=q.opts.map(function(o,j){return '<button class="opt" data-act="opt" data-to="'+j+'" aria-pressed="'+(Q.sel===j)+'"><span class="k">'+'أبجد'[j]+'</span><span>'+o.t+'</span></button>'}).join('');
+  return topbar('الاختبار')+'<section class="card stack"><div class="row" style="justify-content:space-between"><span class="crumb">الطالب: '+escH(Q.name)+'</span><b>السؤال '+ar(i+1)+' من '+ar(Q.qs.length)+'</b></div>'+
+   '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="'+Q.qs.length+'" aria-valuenow="'+i+'"><i style="width:'+(i/Q.qs.length*100)+'%"></i></div>'+
+   '<p style="font-size:1.1rem">'+q.q+'</p>'+(q.viz?'<div style="max-width:380px">'+fig(q.viz,'الشكل')+'</div>':'')+'<div class="opts">'+opts+'</div>'+
+   '<div class="row"><button class="btn" data-act="next" '+(Q.sel==null?'disabled':'')+'>'+(last?'إنهاء وعرض النتيجة':'التالي')+'</button></div></section>';
+}
+function resultHTML(){
+  var Q=S.quiz,n=Q.qs.length,c=Q.score,pc=Math.round(c/n*100);
+  var msg=c>=9?'ممتاز، أحسنت!':c>=7?'جيد جدًا، استمر.':c>=5?'جيد، راجع الأخطاء في الأسفل.':'راجع الشرح التفاعلي ثم أعد المحاولة.';
+  var d=new Date(),ds=d.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+  var txt='اختبار مساحة السطح – الصف السابع\nالطالب: '+Q.name+'\nالنتيجة: '+ar(c)+' من '+ar(n)+' ('+ar(pc)+'٪)\nالتاريخ: '+ds;
+  var rev=Q.qs.map(function(q,i){var ok=Q.ans[i]!=null&&q.opts[Q.ans[i]].ok,corr=q.opts.filter(function(o){return o.ok})[0];
+    return '<div class="rev '+(ok?'ok':'bad')+'"><div><span class="badge '+(ok?'ok':'bad')+'">'+(ok?'صحيحة':'خاطئة')+'</span> <b>السؤال '+ar(i+1)+'</b></div><p>'+q.q+'</p>'+
+    '<p>إجابتك: <b>'+(Q.ans[i]!=null?q.opts[Q.ans[i]].t:'—')+'</b>'+(ok?'':' · الصحيحة: <b>'+corr.t+'</b>')+'</p><div class="steps">'+q.steps.map(function(s){return '<div class="step">'+s+'</div>'}).join('')+'</div><div class="final">'+q.final+'</div></div>'}).join('');
+  return topbar('نتيجة الاختبار')+'<section class="card stack"><span class="crumb">الطالب: '+escH(Q.name)+'</span><div class="score num">'+ar(c)+' / '+ar(n)+'</div><p><b>'+ar(pc)+'٪</b> · '+msg+'</p>'+
+   '<div class="field"><label for="cb">نص النتيجة (انسخه وأرسله إلى المعلمة)</label><textarea id="cb" class="copybox" readonly>'+escH(txt)+'</textarea></div>'+
+   '<div class="row"><button class="btn" data-act="copy">نسخ النتيجة</button><button class="btn accent" data-act="retake">اختبار جديد بأرقام جديدة</button></div><div class="msg ok" id="cmsg" role="status"></div></section>'+
+   '<h2>مراجعة الإجابات</h2>'+rev+ENG2();
+}
+
+/* ---------- العرض ---------- */
+function render(keep){
+  var y=window.scrollY||0,h='';
+  if(S.screen==='gate')h=gateHTML();
+  else if(S.screen==='home')h=homeHTML();
+  else if(S.screen==='learn')h=learnHTML();
+  else if(S.screen==='quizIntro')h=quizIntroHTML();
+  else if(S.screen==='quiz')h=quizHTML();
+  else h=resultHTML();
+  app.innerHTML='<div class="wrap">'+h+'</div>';
+  if(keep&&window.scrollTo)window.scrollTo(0,y);
+}
+function go(to){S.screen=to;S.confirm=false;render();if(window.scrollTo)window.scrollTo(0,0)}
+
+/* ---------- الأحداث ---------- */
+app.addEventListener('click',function(ev){
+  var t=ev.target.closest('[data-act]');if(!t)return;var a=t.getAttribute('data-act'),to=t.getAttribute('data-to');
+  if(a==='go')return go(to);
+  if(a==='logout'){try{sessionStorage.removeItem('sa_ok')}catch(e){}return go('gate')}
+  if(a==='showpw'){var i=$('#pw');i.type=i.type==='password'?'text':'password';t.textContent=i.type==='password'?'إظهار':'إخفاء';return}
+  if(a==='sec'){S.sec=to;return render(false)}
+  if(a==='exk'){S.ex={kind:to,p:null,n:0};return render(true)}
+  if(a==='exnew'){S.ex.p=null;S.ex.n=0;return render(true)}
+  if(a==='exnext'){S.ex.n++;return render(true)}
+  if(a==='exreset'){S.ex.n=0;return render(true)}
+  if(a==='prnew'){S.pr.p=null;S.pr.msg='';S.pr.text='';S.pr.show=false;return render(true)}
+  if(a==='prshow'){S.pr.show=true;return render(true)}
+  if(a==='prhint'){var p=S.pr.p;S.pr.text='تلميح: '+(p.kind==='cuboid'?'احسب مساحات الأوجه الثلاثة المختلفة، اضربها في ٢ ثم اجمع.':p.kind==='cube'?'مساحة السطح = ٦ × (طول الضلع)².':'مساحة المربع + ٤ × (½ × القاعدة × ارتفاع المثلث).');S.pr.msg='';return render(true)}
+  if(a==='check'){
+    var v=parseNum($('#ans').value),p2=S.pr.p;
+    if(isNaN(v)){S.pr.text='اكتب رقمًا في خانة الإجابة.';S.pr.msg='';return render(true)}
+    S.pr.total++;
+    if(Math.abs(v-p2.ans)<0.01){S.pr.right++;S.pr.msg='ok';S.pr.text='إجابة صحيحة، أحسنت! '+p2.final}
+    else{S.pr.msg='';S.pr.text='إجابة غير صحيحة، حاول مرة أخرى أو اطلب التلميح.'}
+    return render(true)
+  }
+  if(a==='pickA'){S.th.pickA=to;return render(true)}
+  if(a==='pickB'){S.th.pickB=to;return render(true)}
+  if(a==='thnewA'){S.th.a=null;return render(true)}
+  if(a==='thnewB'){S.th.b=null;return render(true)}
+  if(a==='confirmname'){
+    var nm=($('#nm').value||'').replace(/\s+/g,' ').trim();
+    if(nm.length<2){$('#nmsg').textContent='اكتب اسم الطالب أولًا، فهو إجباري لبدء الاختبار.';$('#nm').focus();return}
+    S.nm=nm;S.confirm=true;return render(false)
+  }
+  if(a==='editname'){S.confirm=false;return render(false)}
+  if(a==='startq'){S.quiz={name:S.nm,qs:genQuiz(),i:0,sel:null,ans:[],score:0};S.screen='quiz';return render(false)}
+  if(a==='opt'){S.quiz.sel=+to;return render(true)}
+  if(a==='next'){
+    var Q=S.quiz;Q.ans[Q.i]=Q.sel;if(Q.qs[Q.i].opts[Q.sel].ok)Q.score++;Q.sel=null;
+    if(Q.i===Q.qs.length-1){S.screen='result'}else Q.i++;
+    render(false);if(window.scrollTo)window.scrollTo(0,0);return
+  }
+  if(a==='retake'){S.quiz=null;S.confirm=false;S.screen='quizIntro';render(false);if(window.scrollTo)window.scrollTo(0,0);return}
+  if(a==='copy'){
+    var box=$('#cb'),m=$('#cmsg'),done=function(){m.textContent='تم نسخ النتيجة.'},fail=function(){box.focus();box.select();m.textContent='حدّد النص وانسخه يدويًا.'};
+    try{navigator.clipboard.writeText(box.value).then(done,fail)}catch(e){fail()}
+  }
+});
+app.addEventListener('input',function(ev){
+  var t=ev.target;
+  if(t.matches&&t.matches('input[type=range]')){
+    var k=t.getAttribute('data-k'),val=+t.value;S.v[k]=val;var lab=$('#lv-'+k);if(lab)lab.textContent=ar(val);
+    var out=$('#out');if(out)out.innerHTML=S.sec==='prism'?outPrism():S.sec==='cube'?outCube():outPyr();
+  }
+});
+app.addEventListener('submit',function(ev){
+  ev.preventDefault();var f=ev.target.id;
+  if(f==='gf'){
+    var v=$('#pw').value;
+    if(hashPw(v)===STATE.ph){try{sessionStorage.setItem('sa_ok',STATE.ph)}catch(e){}go('home')}
+    else{$('#gmsg').textContent='كلمة السر غير صحيحة. اطلبها من المعلم.';$('#pw').select()}
+  }
+  if(f==='tf')changePw();
+});
+function tmsg(t,c){var m=$('#tmsg');m.textContent=t;m.className='msg '+(c||'')}
+async function changePw(){
+  var cur=$('#tc').value,n1=$('#tn').value,n2=$('#tn2').value;
+  if(hashPw(cur)!==STATE.ph)return tmsg('كلمة السر الحالية غير صحيحة.','err');
+  if(n1.length<4)return tmsg('كلمة السر الجديدة يجب أن تكون ٤ أحرف أو أكثر.','err');
+  if(n1!==n2)return tmsg('تأكيد كلمة السر غير مطابق.','err');
+  var art=null;try{art=window.claude&&await window.claude.use('artifact')}catch(e){}
+  if(!art)return tmsg('لا يمكن الحفظ من هذا العرض. افتح الصفحة من حساب صاحب الصفحة على claude.ai.','err');
+  try{
+    tmsg('جارٍ الحفظ…');
+    await art.publish(buildDoc({ph:hashPw(n1)}));
+    tmsg('تم الحفظ، ستُحمَّل الصفحة بكلمة السر الجديدة.','ok');
+  }catch(e){
+    var c=e&&e.code;
+    if(c==='not_writer'||c==='not_granted'||c==='consent_required'||c==='capability_disabled')tmsg('تغيير كلمة السر متاح لصاحب الصفحة فقط.','err');
+    else if(c==='conflict')tmsg('تم تحديث الصفحة للتو، أعد المحاولة بعد التحميل.','err');
+    else tmsg('تعذّر الحفظ الآن، حاول بعد قليل.','err');
+  }
+}
+function resetCss(){var st=document.head&&document.head.querySelector('style');return st?st.textContent:':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}'}
+function buildDoc(ns){
+  var sj=JSON.stringify(ns).replace(/</g,'\\u003c');
+  var page=TPLRAW.replace(PS,function(){return sj}).replace(PT,function(){return esc(TPLRAW)});
+  return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>'+resetCss()+'</style></head><body>'+page+'</body></html>';
+}
+render(false);
+window.__t={genQuiz:genQuiz,gen:gen,genCompare:genCompare,sha256:sha256,hashPw:hashPw,ar:ar,parseNum:parseNum,buildDoc:buildDoc,gateHTML:gateHTML,homeHTML:homeHTML,learnHTML:learnHTML,S:S,secBody:secBody,quizIntroHTML:quizIntroHTML};
+})();
+<\/script>
+</script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var STATE=JSON.parse($('#state').textContent);
+var CLOSE='<'+'/script', PS='%%'+'STATE%%', PT='%%'+'TPL%%';
+var TPLRAW=$('#tpl').textContent.split('<\\/script').join(CLOSE);
+function esc(s){return s.split(CLOSE).join('<\\/script')}
+
+/* ---------- SHA-256 (للتحقق من كلمة السر دون تخزينها نصًا) ---------- */
+var K=[],H0=[];
+(function(){var n=2,c=0;while(c<64){var p=true;for(var i=2;i*i<=n;i++){if(n%i===0){p=false;break}}if(p){if(c<8)H0[c]=(Math.pow(n,1/2)%1)*4294967296|0;K[c]=(Math.pow(n,1/3)%1)*4294967296|0;c++}n++}})();
+function sha256(s){
+  var m=unescape(encodeURIComponent(s)),l=m.length,n=(((l+8)>>6)+1)*16,w=[],i,j;
+  for(i=0;i<n;i++)w[i]=0;
+  for(i=0;i<l;i++)w[i>>2]|=m.charCodeAt(i)<<(24-(i%4)*8);
+  w[l>>2]|=0x80<<(24-(l%4)*8);w[n-1]=l*8;
+  var h=H0.slice();
+  for(j=0;j<n;j+=16){
+    var x=w.slice(j,j+16);
+    for(i=16;i<64;i++){var a=x[i-15],b=x[i-2];x[i]=(x[i-16]+(((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3))+x[i-7]+(((b>>>17)|(b<<15))^((b>>>19)|(b<<13))^(b>>>10)))|0}
+    var A=h[0],B=h[1],C=h[2],D=h[3],E=h[4],F=h[5],G=h[6],Hh=h[7];
+    for(i=0;i<64;i++){
+      var t1=(Hh+(((E>>>6)|(E<<26))^((E>>>11)|(E<<21))^((E>>>25)|(E<<7)))+((E&F)^(~E&G))+K[i]+x[i])|0;
+      var t2=((((A>>>2)|(A<<30))^((A>>>13)|(A<<19))^((A>>>22)|(A<<10)))+((A&B)^(A&C)^(B&C)))|0;
+      Hh=G;G=F;F=E;E=(D+t1)|0;D=C;C=B;B=A;A=(t1+t2)|0;
+    }
+    var v=[A,B,C,D,E,F,G,Hh];for(i=0;i<8;i++)h[i]=(h[i]+v[i])|0;
+  }
+  return h.map(function(v){return ('00000000'+(v>>>0).toString(16)).slice(-8)}).join('');
+}
+function hashPw(p){return sha256('sa10|'+p)}
+
+/* ---------- أرقام هندية ---------- */
+var DIG='٠١٢٣٤٥٦٧٨٩';
+function r2(x){return Math.round((x+1e-9)*100)/100}
+function ar(n){return String(r2(n)).replace(/\d/g,function(d){return DIG[d]}).replace('.','٫')}
+function parseNum(s){
+  s=String(s).replace(/[٠-٩]/g,function(d){return DIG.indexOf(d)}).replace(/[۰-۹]/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)}).replace(/[٫،,]/g,'.').replace(/\s+/g,'');
+  if(!/^\d*\.?\d+$/.test(s))return NaN;return parseFloat(s);
+}
+function ri(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function eq(s){return '<div class="eq">'+s+'</div>'}
+var SQ='سم²';
+
+/* ---------- روابط التواصل ---------- */
+var WA1='https://wa.me/96569943365', TG='https://t.me/+pjyOcLAg1NY3ZTRk',
+    IG='https://www.instagram.com/seddd.ra?avpt=MWhodWRzcWlseTE5cQ%3D%3D&utm_source=qr',
+    WAC='https://chat.whatsapp.com/EvF5xxo70IkLfv2zuS9FWO', WA2='https://wa.me/message/3SK6HSHQFVALJ1';
+var ICON={
+ wa:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path fill="#fff" d="M12 4.6a7.4 7.4 0 0 0-6.4 11.1L4.7 19.4l3.800-1A7.400 7.400 0 1 0 12 4.600zm0 1.400a6 6 0 1 1-3.300 11l-.3-.2-2.200.6.600-2.100-.2-.3A6 6 0 0 1 12 6zm-2.200 2.700c-.2 0-.4.1-.6.3-.4.5-.8 1.100-.4 2 .4.900 1.900 3 4.300 3.900 1 .4 1.700.3 2.100-.1.300-.3.500-.8.400-1.100l-1.400-.7c-.2-.1-.4-.1-.5.1l-.5.6c-.1.100-.3.100-.4.100-.7-.3-1.700-1-2.300-2-.1-.2 0-.3.100-.4l.4-.5c.1-.2.100-.3 0-.5l-.6-1.400c-.1-.3-.3-.4-.6-.4z"/></svg>',
+ tg:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path fill="#fff" d="M5.200 11.800 17.400 7c.6-.2 1.100.1.900 1l-2 9.600c-.1.700-.6.900-1.200.5l-3.200-2.400-1.600 1.500c-.2.200-.3.300-.6.300l.2-3.300 6-5.400c.3-.2-.1-.4-.4-.2l-7.400 4.700-3.200-1c-.7-.2-.7-.7.300-1.100z"/></svg>',
+ ig:'<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="igg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/><stop offset=".65" stop-color="#D62976"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs><circle cx="12" cy="12" r="12" fill="url(#igg)"/><rect x="6" y="6" width="12" height="12" rx="3.600" fill="none" stroke="#fff" stroke-width="1.600"/><circle cx="12" cy="12" r="2.800" fill="none" stroke="#fff" stroke-width="1.600"/><circle cx="15.600" cy="8.400" r=".9" fill="#fff"/></svg>',
+ wc:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#128C7E"/><circle cx="12" cy="9.200" r="2.400" fill="#fff"/><circle cx="7.600" cy="10.400" r="1.800" fill="#fff"/><circle cx="16.400" cy="10.400" r="1.800" fill="#fff"/><path fill="#fff" d="M7.800 17c0-2.200 1.800-3.800 4.200-3.800s4.200 1.600 4.200 3.800zM3.600 16.400c0-1.700 1.500-2.900 3.300-2.900.5 0 1 .1 1.400.3-.9.800-1.400 1.700-1.500 2.600zM20.400 16.400c0-1.700-1.500-2.900-3.300-2.900-.5 0-1 .1-1.400.3.900.8 1.400 1.700 1.500 2.600z"/></svg>'
+};
+function contactStack(){
+  function c(h,i,t,s){return '<a class="contact" href="'+h+'" target="_blank" rel="noopener">'+ICON[i]+'<span>'+t+(s?'<small>'+s+'</small>':'')+'</span></a>'}
+  return '<nav class="contacts" aria-label="روابط التواصل">'+
+    c(WA1,'wa','للاستفسار','<bdi dir="ltr">+96569943365</bdi>')+
+    c(TG,'tg','انضم هنا للمزيد من الملفات','مجموعة تيليجرام')+
+    c(IG,'ig','للمزيد من الاختبارات','انستجرام')+
+    c(WAC,'wc','انضم إلى مجتمع الواتس آب','مجتمع واتس آب')+'</nav>';
+}
+function eng(num,href){
+  return '<div class="eng"><div><strong>مهندسة الرياضيات</strong><span class="ph">'+num+'</span></div><a class="btn accent small" href="'+href+'" target="_blank" rel="noopener">للتواصل اضغط هنا</a></div>';
+}
+var ENG1=function(){return eng('+96569943365',WA1)};
+var ENG2=function(){return eng('+٢٠١٠٢٣٠٨٣٢٢٧',WA2)};
+
+/* ---------- رسومات SVG ---------- */
+function boxSVG(l,w,h,mono){
+  var W=360,Hh=250,pl=46,pr=44,pt=22,pb=34;
+  var k=Math.min((W-pl-pr)/(l+0.5*w),(Hh-pt-pb)/(h+0.38*w));
+  var dx=0.5*w*k,dy=0.38*w*k,lk=l*k,hk=h*k,x0=pl,y0=Hh-pb;
+  var cf=mono?'fa':'fb',ct='fa',cs=mono?'fa':'fc';
+  var front=[[x0,y0-hk],[x0+lk,y0-hk],[x0+lk,y0],[x0,y0]];
+  var top=[[x0,y0-hk],[x0+lk,y0-hk],[x0+lk+dx,y0-hk-dy],[x0+dx,y0-hk-dy]];
+  var side=[[x0+lk,y0-hk],[x0+lk+dx,y0-hk-dy],[x0+lk+dx,y0-dy],[x0+lk,y0]];
+  function pts(p){return p.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1)}).join(' ')}
+  return '<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="رسم متوازي مستطيلات">'+
+   '<polygon class="face '+ct+'" points="'+pts(top)+'"/><polygon class="face '+cs+'" points="'+pts(side)+'"/><polygon class="face '+cf+'" points="'+pts(front)+'"/>'+
+   '<text class="dim" x="'+(x0+lk/2)+'" y="'+(y0+20)+'" text-anchor="middle">ل = '+ar(l)+'</text>'+
+   '<text class="dim" x="'+(x0-6)+'" y="'+(y0-hk/2+4)+'" text-anchor="end">ع = '+ar(h)+'</text>'+
+   '<text class="dim" x="'+(x0+lk+dx+6)+'" y="'+(y0-dy/2+5)+'" text-anchor="start">ض = '+ar(w)+'</text></svg>';
+}
+function netBoxSVG(l,w,h){
+  var k=Math.min(320/(2*l+2*w),210/(h+2*w)),W=2*l*k+2*w*k+20,Hh=(h+2*w)*k+20,ox=10,oy=10+w*k;
+  function R(x,y,ww,hh,c,t){return '<rect class="face '+c+'" x="'+(ox+x*k).toFixed(1)+'" y="'+(oy+y*k).toFixed(1)+'" width="'+(ww*k).toFixed(1)+'" height="'+(hh*k).toFixed(1)+'"/><text class="area" x="'+(ox+(x+ww/2)*k).toFixed(1)+'" y="'+(oy+(y+hh/2)*k).toFixed(1)+'">'+t+'</text>'}
+  var s=R(0,0,l,h,'fb',ar(l*h))+R(l,0,w,h,'fc',ar(w*h))+R(l+w,0,l,h,'fb',ar(l*h))+R(2*l+w,0,w,h,'fc',ar(w*h))+R(0,-w,l,w,'fa',ar(l*w))+R(0,h,l,w,'fa',ar(l*w));
+  return '<svg viewBox="0 0 '+W.toFixed(0)+' '+Hh.toFixed(0)+'" role="img" aria-label="شبكة متوازي المستطيلات">'+s+'</svg>';
+}
+function cubeNetSVG(s){
+  var u=70,W=4*u+20,Hh=3*u+20,sq=[[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]],o='';
+  sq.forEach(function(p){o+='<rect class="face fa" x="'+(10+p[0]*u)+'" y="'+(10+p[1]*u)+'" width="'+u+'" height="'+u+'"/><text class="area" x="'+(10+p[0]*u+u/2)+'" y="'+(10+p[1]*u+u/2)+'">'+(s?ar(s*s):'')+'</text>'});
+  return '<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="شبكة المكعب من ٦ مربعات">'+o+'</svg>';
+}
+function pyrSVG(b,h){
+  return '<svg viewBox="0 0 360 250" role="img" aria-label="رسم هرم رباعي">'+
+   '<polygon class="face fa" points="70,200 230,200 300,150 140,150" opacity=".85"/>'+
+   '<polygon class="face fc" points="180,24 230,200 300,150"/>'+
+   '<polygon class="face fb" points="180,24 70,200 230,200"/>'+
+   '<line class="dash" x1="180" y1="24" x2="150" y2="200"/>'+
+   '<text class="dim" x="150" y="226" text-anchor="middle">ب = '+ar(b)+'</text>'+
+   '<text class="dim" x="160" y="118" text-anchor="end">ع = '+ar(h)+'</text></svg>';
+}
+function pyrNetSVG(b,h){
+  var k=Math.min(300/(b+2*h),300/(b+2*h)),S=(b+2*h)*k+20,ox=10,hk=h*k,bk=b*k;
+  function P(a){return '<polygon class="face fb" points="'+a.map(function(q){return (ox+q[0]).toFixed(1)+','+(ox+q[1]).toFixed(1)}).join(' ')+'"/>'}
+  var o='<rect class="face fa" x="'+(ox+hk)+'" y="'+(ox+hk)+'" width="'+bk+'" height="'+bk+'"/><text class="area" x="'+(ox+hk+bk/2)+'" y="'+(ox+hk+bk/2)+'">'+ar(b*b)+'</text>';
+  o+=P([[hk,hk],[hk+bk,hk],[hk+bk/2,0]])+P([[hk,hk+bk],[hk+bk,hk+bk],[hk+bk/2,2*hk+bk]])+P([[hk,hk],[hk,hk+bk],[0,hk+bk/2]])+P([[hk+bk,hk],[hk+bk,hk+bk],[2*hk+bk,hk+bk/2]]);
+  var t=ar(b*h/2),c=hk+bk/2;
+  o+='<text class="area" x="'+(ox+c)+'" y="'+(ox+hk*0.62)+'">'+t+'</text><text class="area" x="'+(ox+c)+'" y="'+(ox+hk+bk+hk*0.4)+'">'+t+'</text><text class="area" x="'+(ox+hk*0.38)+'" y="'+(ox+c)+'">'+t+'</text><text class="area" x="'+(ox+hk+bk+hk*0.62)+'" y="'+(ox+c)+'">'+t+'</text>';
+  return '<svg viewBox="0 0 '+S.toFixed(0)+' '+S.toFixed(0)+'" role="img" aria-label="شبكة الهرم الرباعي">'+o+'</svg>';
+}
+function fig(svg,cap){return '<figure class="viz">'+svg+'<figcaption>'+cap+'</figcaption></figure>'}
+
+/* ---------- مولّدات المسائل (أرقام عشوائية جديدة) ---------- */
+function distinct3(a,b,c){return a!==b&&b!==c&&a!==c}
+function gCuboid(dec){
+  var l,w,h;do{l=ri(5,12);w=ri(3,9);h=ri(2,8)}while(!distinct3(l,w,h));
+  if(dec)l=pick([2.5,3.5,4.5,5.5,4.1,6.5,7.5]);
+  var a=r2(l*w),b=r2(l*h),c=r2(w*h),sa=r2(2*a+2*b+2*c);
+  var n=pick(['صندوق هدايا','حوض سمك','علبة ألوان','خزانة صغيرة']);
+  return {kind:'cuboid',l:l,w:w,h:h,ans:sa,unit:SQ,
+   text:'يُراد طلاء '+n+' على شكل متوازي مستطيلات من الخارج، أبعاده: ل = '+ar(l)+' سم، ض = '+ar(w)+' سم، ع = '+ar(h)+' سم. أوجد مساحة سطحه.',
+   viz:boxSVG(l,w,h),
+   steps:['نكتب القانون:'+eq('م = ٢ ل ض + ٢ ل ع + ٢ ض ع'),
+    'نعوّض الأبعاد في القانون:'+eq('م = ٢ × ('+ar(l)+' × '+ar(w)+') + ٢ × ('+ar(l)+' × '+ar(h)+') + ٢ × ('+ar(w)+' × '+ar(h)+')'),
+    'نحسب مساحة كل وجه:'+eq(ar(l)+' × '+ar(w)+' = '+ar(a)+' ، '+ar(l)+' × '+ar(h)+' = '+ar(b)+' ، '+ar(w)+' × '+ar(h)+' = '+ar(c)),
+    'نضرب في ٢ ثم نجمع:'+eq('م = '+ar(2*a)+' + '+ar(2*b)+' + '+ar(2*c)+' = '+ar(sa)+' '+SQ)],
+   final:'مساحة السطح = '+ar(sa)+' '+SQ};
+}
+function gCube(){
+  var s=ri(3,12),sa=6*s*s,who=pick([['وضعت ريم','بلّورة'],['وضع سلمان','مجسمًا']]);
+  return {kind:'cube',s:s,ans:sa,unit:SQ,
+   text:who[0]+' '+who[1]+' داخل صندوق مكعب الشكل طول ضلعه '+ar(s)+' سم. أوجد مساحة سطح الصندوق.',
+   viz:boxSVG(s,s,s,true),
+   steps:['نكتب قانون مساحة سطح المكعب:'+eq('م = ٦ ل²'),
+    'نعوّض طول الضلع:'+eq('م = ٦ × ('+ar(s)+')²'),
+    'نحسب مربع الضلع:'+eq(ar(s)+' × '+ar(s)+' = '+ar(s*s)),
+    'نضرب في ٦:'+eq('م = ٦ × '+ar(s*s)+' = '+ar(sa)+' '+SQ)],
+   final:'مساحة سطح الصندوق = '+ar(sa)+' '+SQ};
+}
+function gPyr(){
+  var b=ri(4,12),h=ri(5,13);if((b*h)%2)b+=1;
+  var tri=b*h/2,sa=b*b+4*tri;
+  return {kind:'pyr',b:b,h:h,ans:sa,unit:SQ,
+   text:'هرم رباعي قائم، قاعدته مربعة طول ضلعها '+ar(b)+' سم، وارتفاع كل وجه مثلثي من أوجهه '+ar(h)+' سم. أوجد مساحة سطح الهرم.',
+   viz:pyrSVG(b,h),
+   steps:['شبكة الهرم: مربع طول ضلعه '+ar(b)+' سم، و٤ مثلثات متطابقة قاعدة كل منها '+ar(b)+' سم وارتفاعها '+ar(h)+' سم.',
+    'نكتب القانون:'+eq('م = مساحة المربع + ٤ × مساحة المثلث'),
+    'نعوّض:'+eq('م = ('+ar(b)+' × '+ar(b)+') + ٤ × (½ × '+ar(b)+' × '+ar(h)+')'),
+    'نحسب كل جزء:'+eq(ar(b*b)+' + ٤ × '+ar(tri)+' = '+ar(b*b)+' + '+ar(4*tri)+' = '+ar(sa)+' '+SQ)],
+   final:'مساحة سطح الهرم = '+ar(sa)+' '+SQ};
+}
+function gen(kind){return kind==='cube'?gCube():kind==='pyr'?gPyr():gCuboid(false)}
+
+/* حالات مقارنة: مكعب مقابل هرم (قد تتساوى المساحتان) */
+function eqSolutions(){var o=[];for(var e=2;e<=10;e++)for(var b=2;b<=16;b++)for(var h=2;h<=16;h++)if(b*b+2*b*h===6*e*e)o.push({e:e,b:b,h:h});return o}
+var EQS=eqSolutions();
+function genCompare(forceEq){
+  var e,b,h,same=forceEq!==undefined?forceEq:Math.random()<0.5;
+  if(same&&EQS.length){var p=pick(EQS);e=p.e;b=p.b;h=p.h}
+  else{do{e=ri(3,8);b=ri(3,10);h=ri(3,11)}while(b*b+2*b*h===6*e*e);same=false}
+  var c=6*e*e,p2=b*b+2*b*h;
+  return {e:e,b:b,h:h,c:c,p:p2,same:c===p2};
+}
+function compareExplain(g){
+  return 'مساحة سطح المكعب = ٦ × ('+ar(g.e)+')² = '+ar(g.c)+' '+SQ+'. مساحة سطح الهرم = ('+ar(g.b)+' × '+ar(g.b)+') + ٤ × (½ × '+ar(g.b)+' × '+ar(g.h)+') = '+ar(g.p)+' '+SQ+'. '+(g.same?'المساحتان متساويتان.':(g.c>g.p?'مساحة المكعب أكبر.':'مساحة الهرم أكبر.'));
+}
+
+/* ---------- حالة الصفحة ---------- */
+var S={screen:'gate',sec:'prism',v:{l:4,w:3,h:2,s:5,b:5,ph:6},ex:{kind:'cuboid',p:null,n:0},pr:{p:null,right:0,total:0,msg:''},th:{a:null,b:null,pickA:null,pickB:null},quiz:null,nm:'',confirm:false};
+var app=$('#app');
+try{if(sessionStorage.getItem('sa_ok')===STATE.ph)S.screen='home'}catch(e){}
+
+/* ---------- الواجهات ---------- */
+function hero(){
+  return '<header class="hero"><div><span class="grade">الصف السابع <bdi dir="ltr">7</bdi></span>'+
+   '<h1>مساحة السطح – القوانين الجبرية لمساحة السطح</h1><div class="en">Surface Area – Algebraic Formulas Of Surface Area</div></div>'+
+   boxSVG(4,3,2).replace('<svg ','<svg style="max-width:190px" ')+'</header>';
+}
+function gateHTML(){
+  return hero()+'<section class="gate">'+contactStack()+
+  '<div class="card stack"><h2>الدخول إلى الدرس</h2><p class="note">اكتب كلمة السر التي أعطاك إياها المعلم لفتح الشرح التفاعلي والاختبار.</p>'+
+  '<form id="gf" class="stack" autocomplete="off"><div class="field"><label for="pw">كلمة السر</label><div class="pwrow"><input id="pw" type="password" autocomplete="off" required><button type="button" class="btn ghost small" data-act="showpw">إظهار</button></div></div>'+
+  '<button class="btn" type="submit">دخول</button><div class="msg err" id="gmsg" role="alert"></div></form>'+
+  '<details class="teacher"><summary>إعدادات المعلم: تغيير كلمة السر</summary><form id="tf" class="stack" style="margin-top:12px" autocomplete="off">'+
+  '<div class="field"><label for="tc">كلمة السر الحالية</label><input id="tc" type="password" autocomplete="off"></div>'+
+  '<div class="field"><label for="tn">كلمة السر الجديدة (٤ أحرف أو أكثر)</label><input id="tn" type="password" autocomplete="off"></div>'+
+  '<div class="field"><label for="tn2">تأكيد كلمة السر الجديدة</label><input id="tn2" type="password" autocomplete="off"></div>'+
+  '<button class="btn accent" type="submit">حفظ كلمة السر الجديدة</button><div class="msg" id="tmsg" role="status"></div>'+
+  '<p class="note">يحفظ التغيير صاحب الصفحة فقط، وبعد الحفظ تعمل الكلمة الجديدة لجميع الطلاب.</p></form></details></div></section>';
+}
+function homeHTML(){
+  return hero()+'<section class="choices">'+
+  '<button class="choice" data-act="go" data-to="learn"><span class="tag">القسم الأول</span><h2>شرح تفاعلي</h2><p>حرّك الأبعاد وشاهد مساحة السطح تتغير، ثم حلّ مسائل بأرقام جديدة في كل مرة.</p><span class="btn small">ابدأ الشرح</span></button>'+
+  '<button class="choice" data-act="go" data-to="quizIntro"><span class="tag">القسم الثاني</span><h2>الاختبار</h2><p>عشرة أسئلة من أفكار الدرس بأرقام مختلفة. يبدأ الاختبار بعد كتابة اسم الطالب وتأكيده.</p><span class="btn small accent">ادخل الاختبار</span></button></section>'+
+  '<div class="row"><button class="btn ghost small" data-act="logout">تسجيل الخروج</button></div>';
+}
+function topbar(t){return '<div class="top"><button class="btn ghost small" data-act="go" data-to="home">← الرئيسية</button><span class="crumb">الصف السابع · '+t+'</span></div>'}
+
+var SECS=[['prism','المنشور'],['cube','المكعب'],['pyr','الهرم'],['ex','مسألة خطوة بخطوة'],['pr','دورك الآن'],['th','مهارات التفكير']];
+function learnHTML(){
+  var chips=SECS.map(function(s){return '<button class="chip" data-act="sec" data-to="'+s[0]+'" '+(S.sec===s[0]?'aria-current="true"':'')+'>'+s[1]+'</button>'}).join('');
+  return topbar('الشرح التفاعلي')+ENG1()+'<div class="chips" role="tablist">'+chips+'</div><section class="card stack" id="secBody">'+secBody()+'</section>';
+}
+function slider(id,label,min,max,val){return '<div class="slider"><label for="'+id+'">'+label+' = <b id="lv-'+id+'">'+ar(val)+'</b></label><input type="range" id="'+id+'" data-k="'+id+'" min="'+min+'" max="'+max+'" value="'+val+'"></div>'}
+function secBody(){
+  var v=S.v;
+  if(S.sec==='prism')return '<h2>١) مساحة سطح المنشور</h2><p>تخيّل أنك تريد تغليف صندوق هدية بورق ملوّن. لمعرفة كمية الورق نحسب مساحة جميع أوجه الصندوق، وهذه هي <b>مساحة السطح</b>. غيّر الأبعاد وراقب الشبكة والحساب.</p>'+
+    '<div class="sliders">'+slider('l','الطول ل',2,12,v.l)+slider('w','العرض ض',2,10,v.w)+slider('h','الارتفاع ع',2,10,v.h)+'</div><div id="out" class="stack">'+outPrism()+'</div>';
+  if(S.sec==='cube')return '<h2>٢) مساحة سطح المكعّب</h2><p>المكعّب هو شبه مكعّب أبعاده متساوية، فكل أوجهه الستة مربعات متطابقة.</p>'+
+    '<div class="sliders">'+slider('s','طول الضلع ل',1,12,v.s)+'</div><div id="out" class="stack">'+outCube()+'</div>';
+  if(S.sec==='pyr')return '<h2>٣) مساحة سطح الهرم الرباعي القائم</h2><p>شبكة الهرم مربع في المنتصف و٤ مثلثات متطابقة. غيّر طول ضلع القاعدة وارتفاع الوجه المثلثي.</p>'+
+    '<div class="sliders">'+slider('b','ضلع القاعدة ب',2,12,v.b)+slider('ph','ارتفاع الوجه المثلثي ع',2,14,v.ph)+'</div><div id="out" class="stack">'+outPyr()+'</div>';
+  if(S.sec==='ex')return exHTML();
+  if(S.sec==='pr')return prHTML();
+  return thHTML();
+}
+function outPrism(){
+  var l=S.v.l,w=S.v.w,h=S.v.h,a=l*w,b=l*h,c=w*h,sa=2*a+2*b+2*c;
+  return '<div class="two">'+fig(boxSVG(l,w,h),'المنشور بأبعاده')+fig(netBoxSVG(l,w,h),'شبكة المنشور: مساحة كل وجه')+'</div>'+
+  '<table class="tbl"><thead><tr><th>الوجه</th><th>مساحة الوجه الواحد</th><th>عدد الوجوه</th><th>المجموع</th></tr></thead><tbody>'+
+  '<tr><td><span class="swatch fa"></span>العلوي والسفلي (ل × ض)</td><td class="num">'+ar(a)+'</td><td>٢</td><td class="num">'+ar(2*a)+'</td></tr>'+
+  '<tr><td><span class="swatch fb"></span>الأمامي والخلفي (ل × ع)</td><td class="num">'+ar(b)+'</td><td>٢</td><td class="num">'+ar(2*b)+'</td></tr>'+
+  '<tr><td><span class="swatch fc"></span>الجانبيان (ض × ع)</td><td class="num">'+ar(c)+'</td><td>٢</td><td class="num">'+ar(2*c)+'</td></tr></tbody></table>'+
+  '<p class="note">كل وجهين متقابلين متطابقان ولهما المساحة نفسها.</p><div class="formula">م = ٢ ل ض + ٢ ل ع + ٢ ض ع</div>'+
+  eq('م = ٢ × ('+ar(l)+' × '+ar(w)+') + ٢ × ('+ar(l)+' × '+ar(h)+') + ٢ × ('+ar(w)+' × '+ar(h)+') = '+ar(2*a)+' + '+ar(2*b)+' + '+ar(2*c))+
+  '<div class="final">مساحة السطح = '+ar(sa)+' '+SQ+'</div>';
+}
+function outCube(){
+  var s=S.v.s,sq=s*s;
+  return '<div class="two">'+fig(boxSVG(s,s,s,true),'مكعّب طول ضلعه '+ar(s))+fig(cubeNetSVG(s),'٦ مربعات، مساحة كل منها '+ar(sq))+'</div>'+
+  '<div class="formula">مساحة سطح المكعّب: م = ٦ ل²</div>'+
+  eq('م = ٦ × ('+ar(s)+')² = ٦ × '+ar(sq)+' = '+ar(6*sq)+' '+SQ)+
+  '<p class="note">وهي النتيجة نفسها لقانون المنشور عندما ل = ض = ع: ٢ل² + ٢ل² + ٢ل² = ٦ل².</p>'+
+  '<div class="final">مساحة السطح = '+ar(6*sq)+' '+SQ+'</div>';
+}
+function outPyr(){
+  var b=S.v.b,h=S.v.ph,tri=b*h/2,sa=b*b+4*tri;
+  return '<div class="two">'+fig(pyrSVG(b,h),'هرم رباعي قائم')+fig(pyrNetSVG(b,h),'الشبكة: مربع مساحته '+ar(b*b)+' و٤ مثلثات مساحة كل منها '+ar(tri))+'</div>'+
+  '<div class="formula">مساحة سطح الهرم = مساحة المربع + ٤ × مساحة المثلث</div>'+
+  eq('م = ('+ar(b)+' × '+ar(b)+') + ٤ × (½ × '+ar(b)+' × '+ar(h)+') = '+ar(b*b)+' + ٤ × '+ar(tri)+' = '+ar(sa)+' '+SQ)+
+  '<p class="note">الطريقة المختصرة عندما تكون الأوجه المثلثية متطابقة: مساحة القاعدة + (عدد الأوجه المثلثية × مساحة أي منها).</p>'+
+  '<div class="final">مساحة السطح = '+ar(sa)+' '+SQ+'</div>';
+}
+var KINDS=[['cuboid','متوازي مستطيلات'],['cube','مكعّب'],['pyr','هرم رباعي']];
+function exHTML(){
+  if(!S.ex.p)S.ex.p=gen(S.ex.kind);
+  var p=S.ex.p,n=S.ex.n,steps=p.steps.slice(0,n).map(function(s){return '<div class="step">'+s+'</div>'}).join('');
+  return '<h2>٤) مسألة بأرقام جديدة، حلّها خطوة بخطوة</h2><div class="row">'+KINDS.map(function(k){return '<button class="chip" data-act="exk" data-to="'+k[0]+'" '+(S.ex.kind===k[0]?'aria-current="true"':'')+'>'+k[1]+'</button>'}).join('')+
+   '<button class="btn ghost small" data-act="exnew">مسألة جديدة بأرقام جديدة</button></div>'+
+   '<div class="two"><div class="stack"><p><b>المسألة:</b> '+p.text+'</p></div>'+fig(p.viz,'الشكل')+'</div>'+
+   '<div class="steps">'+steps+'</div>'+(n>=p.steps.length?'<div class="final">'+p.final+'</div>':'')+
+   '<div class="row"><button class="btn" data-act="exnext" '+(n>=p.steps.length?'disabled':'')+'>'+(n===0?'أظهر الخطوة الأولى':'الخطوة التالية')+'</button>'+(n>0?'<button class="btn ghost small" data-act="exreset">إخفاء الخطوات</button>':'')+'</div>';
+}
+function prHTML(){
+  if(!S.pr.p)S.pr.p=gen(pick(['cuboid','cube','pyr','cuboid']));
+  var p=S.pr.p,solved=S.pr.msg==='ok';
+  var sol=S.pr.show?'<div class="steps">'+p.steps.map(function(s){return '<div class="step">'+s+'</div>'}).join('')+'</div><div class="final">'+p.final+'</div>':'';
+  return '<h2>٥) دورك الآن</h2><p class="note">حلّ بنفسك ثم تحقق. الأرقام تتغير في كل مسألة. النتيجة: <b>'+ar(S.pr.right)+'</b> صحيحة من <b>'+ar(S.pr.total)+'</b>.</p>'+
+   '<div class="two"><div class="stack"><p><b>المسألة:</b> '+p.text+'</p>'+
+   '<div class="field"><label for="ans">إجابتك (مساحة السطح بوحدة '+SQ+')</label><input id="ans" class="ans" type="text" inputmode="decimal" autocomplete="off" '+(solved?'disabled':'')+'></div>'+
+   '<div class="row"><button class="btn" data-act="check" '+(solved?'disabled':'')+'>تحقق</button><button class="btn ghost small" data-act="prhint">تلميح</button><button class="btn ghost small" data-act="prshow">أظهر الحل</button><button class="btn accent small" data-act="prnew">مسألة جديدة</button></div>'+
+   '<div class="msg '+(S.pr.msg==='ok'?'ok':'err')+'" id="prmsg" role="status">'+(S.pr.text||'')+'</div></div>'+fig(p.viz,'الشكل')+'</div>'+sol;
+}
+function thHTML(){
+  if(!S.th.a){var s=ri(3,9);S.th.a={s:s,sa:6*s*s,wrong:s*s/2,flip:Math.random()<0.5};S.th.pickA=null}
+  if(!S.th.b){S.th.b=genCompare();S.th.pickB=null}
+  var a=S.th.a,g=S.th.b,y=a.s*a.s;
+  var n1=a.flip?['هدى','ليلى']:['ليلى','هدى'];
+  var sayRight=n1[0],sayWrong=n1[1];
+  var A='<div class="stack"><h3>أ) من الإجابة الصحيحة؟</h3><p>أوجدت كل من '+sayRight+' و'+sayWrong+' طول ضلع مكعب مساحته السطحية '+ar(a.sa)+' '+SQ+':</p>'+
+   '<div class="two"><div class="card soft"><b>'+sayRight+'</b>'+eq(ar(a.sa)+' ÷ ٦ = '+ar(y)+'')+'العدد الذي مربّعه '+ar(y)+' هو '+ar(a.s)+'، إذًا طول الضلع '+ar(a.s)+' سم.</div>'+
+   '<div class="card soft"><b>'+sayWrong+'</b>'+eq(ar(a.sa)+' ÷ ٦ = '+ar(y)+'')+'العدد الذي مربّعه '+ar(y)+' هو '+ar(a.wrong)+'، إذًا طول الضلع '+ar(a.wrong)+' سم.</div></div>'+
+   '<div class="row"><button class="chip" data-act="pickA" data-to="r" '+(S.th.pickA==='r'?'aria-current="true"':'')+'>'+sayRight+'</button><button class="chip" data-act="pickA" data-to="w" '+(S.th.pickA==='w'?'aria-current="true"':'')+'>'+sayWrong+'</button></div>'+
+   (S.th.pickA?'<div class="'+(S.th.pickA==='r'?'final':'rev bad')+'">'+(S.th.pickA==='r'?'صحيح. ':'ليست الإجابة الصحيحة. ')+'نتحقق بالتربيع: ('+ar(a.s)+')² = '+ar(y)+' وهذا يساوي '+ar(a.sa)+' ÷ ٦، أما ('+ar(a.wrong)+')² = '+ar(r2(a.wrong*a.wrong))+' فلا يساوي '+ar(y)+'. الإجابة الصحيحة هي إجابة '+sayRight+'.</div>':'')+
+   '<button class="btn ghost small" data-act="thnewA">أرقام جديدة</button></div>';
+  var B='<div class="stack"><h3>ب) هل المساحتان متساويتان؟</h3><p>رسم نوّاف مكعبًا طول حرفه '+ar(g.e)+' سم، ورسم أيضًا هرمًا رباعيًا قائمًا قاعدته مربعة طول ضلعها '+ar(g.b)+' سم وارتفاع كل وجه مثلثي '+ar(g.h)+' سم. يعتقد نوّاف أن للمجسمين المساحة الكلية نفسها للسطح. هل اعتقاده صحيح؟</p>'+
+   '<div class="row"><button class="chip" data-act="pickB" data-to="y" '+(S.th.pickB==='y'?'aria-current="true"':'')+'>نعم، صحيح</button><button class="chip" data-act="pickB" data-to="n" '+(S.th.pickB==='n'?'aria-current="true"':'')+'>لا، غير صحيح</button></div>'+
+   (S.th.pickB?'<div class="'+((S.th.pickB==='y')===g.same?'final':'rev bad')+'">'+((S.th.pickB==='y')===g.same?'إجابة صحيحة. ':'راجع الحساب: ')+compareExplain(g)+'</div>':'')+
+   '<button class="btn ghost small" data-act="thnewB">أرقام جديدة</button></div>';
+  return '<h2>٦) مهارات التفكير العليا</h2>'+A+'<hr style="border:0;border-top:1.5px dashed var(--line);width:100%">'+B;
+}
+
+/* ---------- الاختبار ---------- */
+function genQuiz(){
+  var Q=[],o=function(arr,correct){var seen={},list=[];arr.forEach(function(x){var k=r2(x);if(k>0&&!seen[k]&&k!==r2(correct)){seen[k]=1;list.push(k)}});return list};
+  function mc(correct,wrong){var w=shuffle(o(wrong,correct)).slice(0,3),i=100;while(w.length<3){var x=r2(correct+ri(2,9)*(Math.random()<.5?1:-1));if(x>0&&w.indexOf(x)<0&&x!==r2(correct))w.push(x)}
+    return shuffle([{t:ar(correct),ok:true}].concat(w.map(function(x){return {t:ar(x),ok:false}})))}
+  function withUnit(opts){return opts.map(function(x){return {t:x.t+' '+SQ,ok:x.ok}})}
+  // 1 متوازي مستطيلات
+  var p=gCuboid(false);
+  Q.push({q:'أوجد مساحة سطح متوازي مستطيلات أبعاده: ل = '+ar(p.l)+' سم، ض = '+ar(p.w)+' سم، ع = '+ar(p.h)+' سم.',viz:p.viz,
+    opts:withUnit(mc(p.ans,[p.l*p.w+p.l*p.h+p.w*p.h,p.l*p.w*p.h,2*p.l*p.w+2*p.l*p.h+p.w*p.h,p.ans+p.w*p.h])),steps:p.steps,final:p.final});
+  // 2 مكعب
+  var c=gCube();
+  Q.push({q:'مكعّب طول ضلعه '+ar(c.s)+' سم. ما مساحة سطحه؟',viz:c.viz,opts:withUnit(mc(c.ans,[6*c.s,c.s*c.s*c.s,4*c.s*c.s,12*c.s])),steps:c.steps,final:c.final});
+  // 3 هرم
+  var y=gPyr();
+  Q.push({q:'هرم رباعي قائم قاعدته مربعة طول ضلعها '+ar(y.b)+' سم، وارتفاع كل وجه مثلثي '+ar(y.h)+' سم. ما مساحة سطحه؟',viz:y.viz,
+    opts:withUnit(mc(y.ans,[y.b*y.b+4*y.b*y.h,y.b*y.b+y.b*y.h,4*(y.b*y.h/2),y.b*y.b+2*y.b*y.h/2])),steps:y.steps,final:y.final});
+  // 4 كسور عشرية
+  var d=gCuboid(true);
+  Q.push({q:'أوجد مساحة سطح شبه المكعّب حيث ل = '+ar(d.l)+' سم، ض = '+ar(d.w)+' سم، ع = '+ar(d.h)+' سم.',viz:d.viz,
+    opts:withUnit(mc(d.ans,[d.ans/2,d.l*d.w*d.h,d.ans+d.w*d.h,2*(d.l*d.w+d.l*d.h)])),steps:d.steps,final:d.final});
+  // 5 إيجاد ضلع المكعب
+  var s=ri(3,9),sa=6*s*s;
+  Q.push({q:'مكعّب مساحته السطحية '+ar(sa)+' '+SQ+'. ما طول ضلعه؟',opts:[].concat((function(){var w=shuffle(o([s*s,s*s/2,s+1,s-1,sa/36],s)).slice(0,3);return shuffle([{t:ar(s)+' سم',ok:true}].concat(w.map(function(x){return {t:ar(x)+' سم',ok:false}})))})()),
+    steps:['م = ٦ ل² ، إذن ل² = م ÷ ٦','نقسم: '+ar(sa)+' ÷ ٦ = '+ar(s*s),'العدد الذي مربّعه '+ar(s*s)+' هو '+ar(s)],final:'طول الضلع = '+ar(s)+' سم'});
+  // 6 تكلفة
+  var b2=pick([4,6,8,10]),h2=ri(3,7),pr=ri(3,9),S6=b2*b2+2*b2*h2,cost=S6*pr;
+  Q.push({q:'يريد صاحب مطعم تصميم خزّان ماء على شكل هرم رباعي قائم، قاعدته مربعة طول ضلعها '+ar(b2)+' م وارتفاع كل وجه مثلثي '+ar(h2)+' م. إذا كانت تكلفة المتر المربع من المعدن '+ar(pr)+' دنانير، فما المبلغ الكلي اللازم لتصنيع الخزّان؟',
+    opts:(function(){var w=shuffle(o([S6,S6*pr/2,(b2*b2+4*b2*h2)*pr,(b2*b2+b2*h2)*pr,cost+pr*b2],cost)).slice(0,3);return shuffle([{t:ar(cost)+' دينارًا',ok:true}].concat(w.map(function(x){return {t:ar(x)+' دينارًا',ok:false}})))})(),
+    steps:['مساحة الهرم = ('+ar(b2)+' × '+ar(b2)+') + ٤ × (½ × '+ar(b2)+' × '+ar(h2)+') = '+ar(S6)+' م²','التكلفة = '+ar(S6)+' × '+ar(pr)+' = '+ar(cost)+' دينارًا'],final:'المبلغ الكلي = '+ar(cost)+' دينارًا'});
+  // 7 شبكة من ٦ مربعات
+  var e=pick([0.2,0.3,0.4,0.5,0.6,0.7]),se=r2(6*e*e);
+  Q.push({q:'شبكة تتكون من ٦ مربعات متطابقة، طول ضلع كل منها '+ar(e)+' سم، وتُكوّن مجسمًا. ما مساحة سطح هذا المجسم؟',viz:cubeNetSVG(0),
+    opts:withUnit(mc(se,[6*e,e*e,4*e*e,r2(e*e*5)])),steps:['المجسم المتكوّن مكعّب، ومساحة سطحه = ٦ ل²','م = ٦ × ('+ar(e)+')² = ٦ × '+ar(r2(e*e))+' = '+ar(se)+' '+SQ],final:'مساحة السطح = '+ar(se)+' '+SQ});
+  // 8 ليلى وهدى
+  var s8=ri(3,9),sa8=6*s8*s8,wrong=s8*s8/2,flip=Math.random()<0.5;
+  var nr=flip?'هدى':'ليلى',nw=flip?'ليلى':'هدى';
+  Q.push({q:'أوجدت كل من '+nr+' و'+nw+' طول ضلع مكعب مساحته السطحية '+ar(sa8)+' '+SQ+'. '+nr+': '+ar(sa8)+' ÷ ٦ = '+ar(s8*s8)+'، والعدد الذي مربّعه '+ar(s8*s8)+' هو '+ar(s8)+'، إذن الضلع '+ar(s8)+' سم. '+nw+': '+ar(sa8)+' ÷ ٦ = '+ar(s8*s8)+'، والعدد الذي مربّعه '+ar(s8*s8)+' هو '+ar(wrong)+'، إذن الضلع '+ar(wrong)+' سم. أيهما كانت إجابتها صحيحة؟',
+    opts:shuffle([{t:nr,ok:true},{t:nw,ok:false},{t:'كلتاهما',ok:false},{t:'لا إحداهما',ok:false}]),
+    steps:['نتحقق بالتربيع: ('+ar(s8)+')² = '+ar(s8*s8),'أما ('+ar(wrong)+')² = '+ar(r2(wrong*wrong))+' وهو لا يساوي '+ar(s8*s8)],final:'الإجابة الصحيحة: '+nr});
+  // 9 مقارنة
+  var g=genCompare();
+  Q.push({q:'رسم نوّاف مكعبًا طول حرفه '+ar(g.e)+' سم، ورسم هرمًا رباعيًا قائمًا قاعدته مربعة طول ضلعها '+ar(g.b)+' سم وارتفاع كل وجه مثلثي '+ar(g.h)+' سم. يعتقد نوّاف أن المساحة الكلية للسطح متساوية. ما الصحيح؟',
+    opts:shuffle([{t:'اعتقاده صحيح، المساحتان متساويتان',ok:g.same},{t:'اعتقاده غير صحيح، مساحة المكعب أكبر',ok:!g.same&&g.c>g.p},{t:'اعتقاده غير صحيح، مساحة الهرم أكبر',ok:!g.same&&g.c<g.p}]),
+    steps:[compareExplain(g)],final:g.same?'المساحتان متساويتان':(g.c>g.p?'مساحة المكعب أكبر':'مساحة الهرم أكبر')});
+  // 10 مساحة وجه مثلثي
+  var b10=ri(4,12),h10=ri(5,13);if((b10*h10)%2)b10+=1;var t10=b10*h10/2;
+  Q.push({q:'في هرم رباعي قائم طول ضلع قاعدته '+ar(b10)+' سم وارتفاع كل وجه مثلثي '+ar(h10)+' سم، ما مساحة وجه مثلثي واحد؟',viz:pyrSVG(b10,h10),
+    opts:withUnit(mc(t10,[b10*h10,4*t10,b10*b10,t10+b10])),steps:['مساحة المثلث = ½ × القاعدة × الارتفاع','= ½ × '+ar(b10)+' × '+ar(h10)+' = '+ar(t10)+' '+SQ],final:'مساحة الوجه المثلثي = '+ar(t10)+' '+SQ});
+  return Q.map(function(q){q.opts=q.opts.slice(0,4);return q});
+}
+function quizIntroHTML(){
+  var st=S.confirm?'<div class="card confirm stack"><h2>تأكيد الاسم قبل البدء</h2><p>اسم الطالب: <b>'+escH(S.nm)+'</b></p><p class="note">سيظهر هذا الاسم في نتيجة الاختبار، ولا يمكن تغييره بعد البدء. تأكد من كتابته بشكل صحيح.</p><div class="row"><button class="btn" data-act="startq">نعم، الاسم صحيح، ابدأ الاختبار</button><button class="btn ghost" data-act="editname">تعديل الاسم</button></div></div>':
+   '<div class="card stack"><h2>اكتب اسمك أولًا</h2><p>كتابة اسم الطالب <b>إجبارية</b> ولا يبدأ الاختبار بدونها.</p><div class="field"><label for="nm">اسم الطالب</label><input id="nm" type="text" autocomplete="name" maxlength="60" value="'+escH(S.nm)+'" placeholder="مثال: أحمد محمد"></div><div class="msg err" id="nmsg" role="alert"></div><button class="btn accent" id="go" data-act="confirmname">متابعة</button></div>';
+  return topbar('الاختبار')+ENG2()+'<section class="card stack"><h1 style="font-size:1.6rem">اختبار مساحة السطح</h1><p>١٠ أسئلة اختيار من متعدد من أفكار الدرس (متوازي المستطيلات، المكعب، الهرم الرباعي، التكلفة، والتفكير) بأرقام جديدة في كل مرة. اختر إجابة واحدة لكل سؤال ثم اضغط «التالي».</p></section>'+st;
+}
+function escH(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function quizHTML(){
+  var Q=S.quiz,i=Q.i,q=Q.qs[i],last=i===Q.qs.length-1;
+  var opts=q.opts.map(function(o,j){return '<button class="opt" data-act="opt" data-to="'+j+'" aria-pressed="'+(Q.sel===j)+'"><span class="k">'+'أبجد'[j]+'</span><span>'+o.t+'</span></button>'}).join('');
+  return topbar('الاختبار')+'<section class="card stack"><div class="row" style="justify-content:space-between"><span class="crumb">الطالب: '+escH(Q.name)+'</span><b>السؤال '+ar(i+1)+' من '+ar(Q.qs.length)+'</b></div>'+
+   '<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="'+Q.qs.length+'" aria-valuenow="'+i+'"><i style="width:'+(i/Q.qs.length*100)+'%"></i></div>'+
+   '<p style="font-size:1.1rem">'+q.q+'</p>'+(q.viz?'<div style="max-width:380px">'+fig(q.viz,'الشكل')+'</div>':'')+'<div class="opts">'+opts+'</div>'+
+   '<div class="row"><button class="btn" data-act="next" '+(Q.sel==null?'disabled':'')+'>'+(last?'إنهاء وعرض النتيجة':'التالي')+'</button></div></section>';
+}
+function resultHTML(){
+  var Q=S.quiz,n=Q.qs.length,c=Q.score,pc=Math.round(c/n*100);
+  var msg=c>=9?'ممتاز، أحسنت!':c>=7?'جيد جدًا، استمر.':c>=5?'جيد، راجع الأخطاء في الأسفل.':'راجع الشرح التفاعلي ثم أعد المحاولة.';
+  var d=new Date(),ds=d.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+  var txt='اختبار مساحة السطح – الصف السابع\nالطالب: '+Q.name+'\nالنتيجة: '+ar(c)+' من '+ar(n)+' ('+ar(pc)+'٪)\nالتاريخ: '+ds;
+  var rev=Q.qs.map(function(q,i){var ok=Q.ans[i]!=null&&q.opts[Q.ans[i]].ok,corr=q.opts.filter(function(o){return o.ok})[0];
+    return '<div class="rev '+(ok?'ok':'bad')+'"><div><span class="badge '+(ok?'ok':'bad')+'">'+(ok?'صحيحة':'خاطئة')+'</span> <b>السؤال '+ar(i+1)+'</b></div><p>'+q.q+'</p>'+
+    '<p>إجابتك: <b>'+(Q.ans[i]!=null?q.opts[Q.ans[i]].t:'—')+'</b>'+(ok?'':' · الصحيحة: <b>'+corr.t+'</b>')+'</p><div class="steps">'+q.steps.map(function(s){return '<div class="step">'+s+'</div>'}).join('')+'</div><div class="final">'+q.final+'</div></div>'}).join('');
+  return topbar('نتيجة الاختبار')+'<section class="card stack"><span class="crumb">الطالب: '+escH(Q.name)+'</span><div class="score num">'+ar(c)+' / '+ar(n)+'</div><p><b>'+ar(pc)+'٪</b> · '+msg+'</p>'+
+   '<div class="field"><label for="cb">نص النتيجة (انسخه وأرسله إلى المعلمة)</label><textarea id="cb" class="copybox" readonly>'+escH(txt)+'</textarea></div>'+
+   '<div class="row"><button class="btn" data-act="copy">نسخ النتيجة</button><button class="btn accent" data-act="retake">اختبار جديد بأرقام جديدة</button></div><div class="msg ok" id="cmsg" role="status"></div></section>'+
+   '<h2>مراجعة الإجابات</h2>'+rev+ENG2();
+}
+
+/* ---------- العرض ---------- */
+function render(keep){
+  var y=window.scrollY||0,h='';
+  if(S.screen==='gate')h=gateHTML();
+  else if(S.screen==='home')h=homeHTML();
+  else if(S.screen==='learn')h=learnHTML();
+  else if(S.screen==='quizIntro')h=quizIntroHTML();
+  else if(S.screen==='quiz')h=quizHTML();
+  else h=resultHTML();
+  app.innerHTML='<div class="wrap">'+h+'</div>';
+  if(keep&&window.scrollTo)window.scrollTo(0,y);
+}
+function go(to){S.screen=to;S.confirm=false;render();if(window.scrollTo)window.scrollTo(0,0)}
+
+/* ---------- الأحداث ---------- */
+app.addEventListener('click',function(ev){
+  var t=ev.target.closest('[data-act]');if(!t)return;var a=t.getAttribute('data-act'),to=t.getAttribute('data-to');
+  if(a==='go')return go(to);
+  if(a==='logout'){try{sessionStorage.removeItem('sa_ok')}catch(e){}return go('gate')}
+  if(a==='showpw'){var i=$('#pw');i.type=i.type==='password'?'text':'password';t.textContent=i.type==='password'?'إظهار':'إخفاء';return}
+  if(a==='sec'){S.sec=to;return render(false)}
+  if(a==='exk'){S.ex={kind:to,p:null,n:0};return render(true)}
+  if(a==='exnew'){S.ex.p=null;S.ex.n=0;return render(true)}
+  if(a==='exnext'){S.ex.n++;return render(true)}
+  if(a==='exreset'){S.ex.n=0;return render(true)}
+  if(a==='prnew'){S.pr.p=null;S.pr.msg='';S.pr.text='';S.pr.show=false;return render(true)}
+  if(a==='prshow'){S.pr.show=true;return render(true)}
+  if(a==='prhint'){var p=S.pr.p;S.pr.text='تلميح: '+(p.kind==='cuboid'?'احسب مساحات الأوجه الثلاثة المختلفة، اضربها في ٢ ثم اجمع.':p.kind==='cube'?'مساحة السطح = ٦ × (طول الضلع)².':'مساحة المربع + ٤ × (½ × القاعدة × ارتفاع المثلث).');S.pr.msg='';return render(true)}
+  if(a==='check'){
+    var v=parseNum($('#ans').value),p2=S.pr.p;
+    if(isNaN(v)){S.pr.text='اكتب رقمًا في خانة الإجابة.';S.pr.msg='';return render(true)}
+    S.pr.total++;
+    if(Math.abs(v-p2.ans)<0.01){S.pr.right++;S.pr.msg='ok';S.pr.text='إجابة صحيحة، أحسنت! '+p2.final}
+    else{S.pr.msg='';S.pr.text='إجابة غير صحيحة، حاول مرة أخرى أو اطلب التلميح.'}
+    return render(true)
+  }
+  if(a==='pickA'){S.th.pickA=to;return render(true)}
+  if(a==='pickB'){S.th.pickB=to;return render(true)}
+  if(a==='thnewA'){S.th.a=null;return render(true)}
+  if(a==='thnewB'){S.th.b=null;return render(true)}
+  if(a==='confirmname'){
+    var nm=($('#nm').value||'').replace(/\s+/g,' ').trim();
+    if(nm.length<2){$('#nmsg').textContent='اكتب اسم الطالب أولًا، فهو إجباري لبدء الاختبار.';$('#nm').focus();return}
+    S.nm=nm;S.confirm=true;return render(false)
+  }
+  if(a==='editname'){S.confirm=false;return render(false)}
+  if(a==='startq'){S.quiz={name:S.nm,qs:genQuiz(),i:0,sel:null,ans:[],score:0};S.screen='quiz';return render(false)}
+  if(a==='opt'){S.quiz.sel=+to;return render(true)}
+  if(a==='next'){
+    var Q=S.quiz;Q.ans[Q.i]=Q.sel;if(Q.qs[Q.i].opts[Q.sel].ok)Q.score++;Q.sel=null;
+    if(Q.i===Q.qs.length-1){S.screen='result'}else Q.i++;
+    render(false);if(window.scrollTo)window.scrollTo(0,0);return
+  }
+  if(a==='retake'){S.quiz=null;S.confirm=false;S.screen='quizIntro';render(false);if(window.scrollTo)window.scrollTo(0,0);return}
+  if(a==='copy'){
+    var box=$('#cb'),m=$('#cmsg'),done=function(){m.textContent='تم نسخ النتيجة.'},fail=function(){box.focus();box.select();m.textContent='حدّد النص وانسخه يدويًا.'};
+    try{navigator.clipboard.writeText(box.value).then(done,fail)}catch(e){fail()}
+  }
+});
+app.addEventListener('input',function(ev){
+  var t=ev.target;
+  if(t.matches&&t.matches('input[type=range]')){
+    var k=t.getAttribute('data-k'),val=+t.value;S.v[k]=val;var lab=$('#lv-'+k);if(lab)lab.textContent=ar(val);
+    var out=$('#out');if(out)out.innerHTML=S.sec==='prism'?outPrism():S.sec==='cube'?outCube():outPyr();
+  }
+});
+app.addEventListener('submit',function(ev){
+  ev.preventDefault();var f=ev.target.id;
+  if(f==='gf'){
+    var v=$('#pw').value;
+    if(hashPw(v)===STATE.ph){try{sessionStorage.setItem('sa_ok',STATE.ph)}catch(e){}go('home')}
+    else{$('#gmsg').textContent='كلمة السر غير صحيحة. اطلبها من المعلم.';$('#pw').select()}
+  }
+  if(f==='tf')changePw();
+});
+function tmsg(t,c){var m=$('#tmsg');m.textContent=t;m.className='msg '+(c||'')}
+async function changePw(){
+  var cur=$('#tc').value,n1=$('#tn').value,n2=$('#tn2').value;
+  if(hashPw(cur)!==STATE.ph)return tmsg('كلمة السر الحالية غير صحيحة.','err');
+  if(n1.length<4)return tmsg('كلمة السر الجديدة يجب أن تكون ٤ أحرف أو أكثر.','err');
+  if(n1!==n2)return tmsg('تأكيد كلمة السر غير مطابق.','err');
+  var art=null;try{art=window.claude&&await window.claude.use('artifact')}catch(e){}
+  if(!art)return tmsg('لا يمكن الحفظ من هذا العرض. افتح الصفحة من حساب صاحب الصفحة على claude.ai.','err');
+  try{
+    tmsg('جارٍ الحفظ…');
+    await art.publish(buildDoc({ph:hashPw(n1)}));
+    tmsg('تم الحفظ، ستُحمَّل الصفحة بكلمة السر الجديدة.','ok');
+  }catch(e){
+    var c=e&&e.code;
+    if(c==='not_writer'||c==='not_granted'||c==='consent_required'||c==='capability_disabled')tmsg('تغيير كلمة السر متاح لصاحب الصفحة فقط.','err');
+    else if(c==='conflict')tmsg('تم تحديث الصفحة للتو، أعد المحاولة بعد التحميل.','err');
+    else tmsg('تعذّر الحفظ الآن، حاول بعد قليل.','err');
+  }
+}
+function resetCss(){var st=document.head&&document.head.querySelector('style');return st?st.textContent:':root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}'}
+function buildDoc(ns){
+  var sj=JSON.stringify(ns).replace(/</g,'\\u003c');
+  var page=TPLRAW.replace(PS,function(){return sj}).replace(PT,function(){return esc(TPLRAW)});
+  return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>'+resetCss()+'</style></head><body>'+page+'</body></html>';
+}
+render(false);
+window.__t={genQuiz:genQuiz,gen:gen,genCompare:genCompare,sha256:sha256,hashPw:hashPw,ar:ar,parseNum:parseNum,buildDoc:buildDoc,gateHTML:gateHTML,homeHTML:homeHTML,learnHTML:learnHTML,S:S,secBody:secBody,quizIntroHTML:quizIntroHTML};
+})();
+</script>
+
+</body></html>
